@@ -1,4 +1,4 @@
-# 2026-06-28 실험 — HAETAE 결함주입 vs 대응기법 (대학생용 설명)
+# 2026-06-28 실험 — HAETAE 결함주입 vs 대응기법
 
 > 더 자세한 수식·표는 `attack_defense_analysis.md`, 정식 리포트는 `fullsign_keyrecovery_report.md`.
 > 이 문서는 학부 수준에서 **무엇을·왜·어떻게** 했는지 정확한 용어로 정리한다.
