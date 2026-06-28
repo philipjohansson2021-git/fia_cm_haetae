@@ -1,0 +1,56 @@
+# ===== LaTeX 빌드 산출물 =====
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+# 컴파일된 논문 PDF는 추적하지 않음(원본 .tex로 재생성). 필요하면 아래 줄을 주석 처리.
+main_ko.pdf
+*-output.pdf
+
+# ===== C / 펌웨어 빌드 산출물 =====
+objdir-*/
+*.o
+*.d
+*.elf
+*.hex
+*.bin
+*.lss
+*.sym
+*.map
+*.eep
+
+# ===== 호스트 복원 도구 컴파일 결과 (소스 .c 는 유지) =====
+recovery/recover_s1
+recover_test/recover_s1
+recover_test/dump_z1
+recover_test/*.bin
+recover_test/zetas.txt
+recover_test/nb_data.json
+
+# ===== Python / Jupyter =====
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# ===== OS / 에디터 =====
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
