@@ -1,0 +1,8 @@
+fault,lee_ha_point,baseline,double,leeha,irv
+SEED,yes,LEAK,blocked,blocked,blocked
+SIGNBIT,yes,LEAK,blocked,blocked,blocked
+UNPACK,yes,LEAK,blocked,blocked,blocked
+LSB,yes,LEAK,blocked,blocked,blocked
+CS_T1,no,LEAK,blocked,blocked,blocked
+ADDY_T2,no,LEAK,blocked,blocked,blocked
+REJECT_RB,no,LEAK,blocked,LEAK,blocked

@@ -1,0 +1,5 @@
+variant,sign_cycles,relative,note
+baseline,60858575,1.000,
+double,121717096,2.000,two full signings
+leeha,69175415,1.137,verify-after-sign + post-reject partial-double (1x)
+irv,69369214,1.140,M1 recompute + M2(B0/B1) + M1b/M1c + verify (all post-reject, 1x)

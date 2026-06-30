@@ -1,0 +1,5 @@
+variant,digest,verdict,note
+baseline,63ff5ebfaa6263739651890939cccb48,LEAK,unprotected
+double,63ff5ebfaa6263739651890939cccb48,LEAK,comparison branch skipped (bypassed)
+leeha,63ff5ebfaa6263739651890939cccb48,LEAK,verify branch skipped (bypassed)
+irv,3cbd140fc4cc561bea51816913d53164,blocked,branchless infective (no branch to skip)
