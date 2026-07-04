@@ -15,7 +15,8 @@ code/
 ├─ docs/
 │  └─ IRV_design_notes.md     HAETAE-IRV 설계 상세(M1~M4 메커니즘·B1<B2 통찰·이전버전 diff)
 ├─ Lab_HAETAE_F4_FullSign_v1_1_goodresult.ipynb   [보관용] SETUP→BUILD→SMOKE→EXP1..6 (축 B, 결과 포함)
-└─ Lab_HAETAE_F4_FullSign_v1.ipynb                [작업본] 위 + EXP7(축 A 하드웨어 클럭글리치 캠페인)
+├─ Lab_HAETAE_F4_FullSign_v1.ipynb                [작업본] 위 + EXP7(축 A: 트리거=공격지점, 랜덤 글리치, 4변형 비교)
+└─ Lab_AES_Glitch_Check_F4.ipynb                  [검증] AES 클럭글리치로 리그 정상동작 확인(width~50, DFA 키복원)
 ```
 
 > **두 노트북 차이**: `_v1_1_goodresult`는 EXP1~6(축 B=FAULT_SIM 결정론 라인주입, 대응기법 공정비교)의
@@ -62,10 +63,13 @@ make ... VARIANT=irv FAULT_SIM=1
 | `k` | 0B | 결정론 키 재생성 |
 | `p` | 16B | 입력=메시지로 1회 서명 → 'r' 16B = 서명 SHAKE 다이제스트 |
 | `t` | 16B | 서명 1회 DWT 사이클 → 'r' 4B |
-| `f` | 3B | (FAULT_SIM) [라인 FL_*, oneshot, checkskip] 결함 설정 |
+| `f` | 3B | (FAULT_SIM) [라인 FL_*, oneshot, checkskip] SW 결함 설정 (축 B) |
+| `T` | 1B | (FAULT_SIM) HW 글리치 **트리거 지점** 선택 (축 A). 0=전체 c·s~+y, FL_*=그 연산 직전·직후에만 트리거 |
 | `x`/`s`/`c` | 1B | (FAULT_SIM) z1 / 참 s1(NTT) / 챌린지 c 64B 청크 스트리밍 (T2 복원용) |
 
 결함 라인(FL_*): 1=SEED 2=SIGNBIT 3=UNPACK 4=LSB 5=CS(T1) 6=ADDY(T2) 7=REJECT(RB).
+`T` 로 지점을 고르면 트리거 윈도우가 그 연산만 감싸므로 `ext_offset≈0`+`width~50`으로 정밀 타격 가능
+(펌웨어 `g_trig_line`, `TRIG_HI/LO`; 리셋 시 -1로 초기화되므로 매 리셋 후 재전송 필요).
 
 ## 6. 실행 (노트북)
 `Lab_HAETAE_F4_FullSign_v1_1_goodresult.ipynb` 를 ChipWhisperer Jupyter(`jupyter/courses/fault201/`)에 두고
@@ -74,11 +78,16 @@ make ... VARIANT=irv FAULT_SIM=1
   EXP1(T2 직접추출) · EXP2(커버리지) · EXP3(재현율) · EXP4(2차결함) · EXP5(오버헤드) · EXP6(연산시간).
 - 7.37MHz라 서명 1회 수 초; 거부반복 많은 키는 더 느림(EXP3는 M 낮춰 단축).
 
-**축 A (EXP7, `Lab_HAETAE_F4_FullSign_v1.ipynb` 전용):** 실제 클럭글리치로 T2 실재성 검증.
-- EXP7-a 글리치 셋업(baseline+FSIM, `FL_NONE`으로 SW결함 OFF, `clock_xor`, 트리거윈도우 측정) →
-  EXP7-b 좁은 격자 스윕(success=LEAK_T2 다이제스트로 분류, `glitch_log.csv`) →
-  EXP7-c success 시 `attack_recover`로 실제 s1 복원 + `fig_glitch_map`.
-- 전체서명 1회 ~8초 → 좁은 격자 집중 스윕 권장. **(진행 중 — 결과 추후 갱신)**
+**축 A (EXP7, `Lab_HAETAE_F4_FullSign_v1.ipynb`):** 실제 클럭글리치로 T2 실재성 검증. **트리거=공격지점** 방식.
+- EXP7-a: 단독 부트스트랩 + `ss_trig(FL['ADDY'])`로 트리거를 +y에만 설정 + 윈도우 WIN 측정 + `glitch_once`(capture 무시, **시리얼 다이제스트로 판정**).
+- EXP7-b: **랜덤 탐색**(width∈35~70, offset∈±15, ext∈0~WIN, repeat∈{1,2}) — tqdm 진행바 + 끝에 히트맵 1회. success=LEAK_T2(`63ff5e..`)→ s1 복원.
+- EXP7-b2: +y에서 width 미세스윕(clean-fault 밴드 탐색).
+- EXP7-c: LEAK 근처 정밀 랜덤 + s1 복원 + 파라미터 맵.
+- EXP7-d: **4변형 비교**(baseline/double/leeha/irv 동일 글리치 → baseline만 LEAK, 대응기법 차단) + 막대그래프 `fig_axisA_variants`.
+- ⚠ 서명 1회 ~8초. **핵심 파라미터 스케일: width≈50**(AES 검증에서 확정; `Lab_AES_Glitch_Check_F4.ipynb` 참조).
+
+**AES 리그 검증(`Lab_AES_Glitch_Check_F4.ipynb`):** simpleserial-aes(TINYAES128C)로 이 리그의 클럭글리치 정상동작 확인
+(랜덤탐색 width~50 → 결함 유발, Lab1_1B DFA 키복원). HAETAE 글리치 파라미터 튜닝의 기준.
 
 ## 7. 변형 요약
 | VARIANT | 대응 |
