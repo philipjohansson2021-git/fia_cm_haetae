@@ -1,0 +1,45 @@
+{
+ "run": "p1",
+ "N": 300,
+ "mode": "sweep",
+ "ext": [
+  0,
+  15568
+ ],
+ "w": [
+  30,
+  75
+ ],
+ "o": [
+  -15,
+  15
+ ],
+ "reps": [
+  1,
+  1,
+  2
+ ],
+ "dur_s": 2848.8,
+ "per_shot_s": 9.5,
+ "counts": {
+  "golden": 274,
+  "success": 0,
+  "faulty": 0,
+  "mute": 21,
+  "other": 5
+ },
+ "best_clean_coef": 0,
+ "best_param": null,
+ "leak_params": [],
+ "coverage": [
+  0,
+  0,
+  0,
+  0
+ ],
+ "secret_cov": 0,
+ "secret_pct": 0.0,
+ "sign": null,
+ "acc_n": 5,
+ "full_recovery": null
+}
