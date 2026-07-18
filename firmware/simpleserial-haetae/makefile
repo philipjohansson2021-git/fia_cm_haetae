@@ -39,6 +39,12 @@ ifeq ($(AXISA_JIG),1)
   CDEFS += -DAXISA_JIG -DFAULT_SIM
 endif
 
+# 축 A T1(c·s 스킵→z=y) 클린 실현용: c·s 스테이지 직전 cs1/cs2 사전 0화(스킵→z=y).
+#   레퍼런스 기본 빌드는 미정의라 바이트동일. T1 인과대조 hex 에만 T1_CS_ZEROINIT=1 부여.
+ifeq ($(T1_CS_ZEROINIT),1)
+  CDEFS += -DT1_CS_ZEROINIT
+endif
+
 # 타겟 main + 단일 대응기법 서명(haetae_sign_cm.c, VARIANT 매크로로 분기)
 SRC += simpleserial-haetae.c haetae_sign_cm.c
 # 레퍼런스 keypair/verify 제공원 (서명 internal 은 haetae_sign_cm 이 대체; 미사용 함수는 GC)

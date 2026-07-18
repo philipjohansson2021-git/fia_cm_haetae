@@ -134,12 +134,14 @@ uint8_t cmd_cpoly(uint8_t *in, uint8_t len){ (void)len;
 
 #ifdef AXISA_JIG
 extern void haetae_axisa_fire(void);       // haetae_sign_cm.c: 저장 상태로 +y 재실행(트리거)
+extern void haetae_axisa_fire_t1(void);    // haetae_sign_cm.c: 저장 상태로 c·s1 재실행(T1 글리치 표적)
 // 'J' (1B): 0=prime(정상 서명 1회로 상태 저장 + golden z1 덤프), 1=fire(+y 재실행=글리치 표적)
 //           → 'r' 16B = 현재 g_z1raw 의 SHAKE256 다이제스트(golden 대비 변화 = other/crash 판별).
 //           clean-T2 정밀 판정은 호스트가 'x'(z1)·'s'(s1)·'c'(c) 스트림으로 복원식 적용.
 uint8_t cmd_jig(uint8_t *in, uint8_t len){ (void)len;
-    if (in[0] == 0) do_sign();             // prime: golden 서명 → j_* + g_z1raw(golden)
-    else            haetae_axisa_fire();    // fire : 저장 상태로 +y 재실행
+    if      (in[0] == 0) do_sign();          // prime: golden 서명 → j_* + g_z1raw(golden)
+    else if (in[0] == 2) haetae_axisa_fire_t1(); // T1 fire: 저장 상태로 c·s1 재실행(글리치 표적)
+    else                 haetae_axisa_fire(); // T2 fire: 저장 상태로 +y 재실행
     uint8_t d[16]; shake256(d, 16, (uint8_t*)g_z1raw, sizeof(int32_t) * HAETAE_L * HAETAE_N);
     simpleserial_put('r', 16, d); return 0x00; }
 // 'C' (0B): 글리치 캘리브레이션(G3-1) — 트리거 사이 알려진 카운터 루프(K회) 실행.

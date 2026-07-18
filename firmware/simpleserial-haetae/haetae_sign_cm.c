@@ -75,6 +75,7 @@ int32_t g_cpoly[HAETAE_N];              // 채택된 챌린지 c 계수 — 복�
    재검증한다. AXISA_JIG 는 FAULT_SIM 을 자동 포함하므로 g_z1raw 덤프와 'x/s/c' 스트림을 그대로 쓴다. */
 static polyfixvecl j_y1;  static polyvecl j_cs1;
 static polyfixveck j_y2;  static polyveck j_cs2;
+static polyvecm j_s1;  static poly j_c;  static uint8_t j_b;   // T1 fire_t1: c·s1 재실행 입력(s1=NTT도메인)
 int j_primed = 0;
 void haetae_axisa_fire(void){
   polyfixvecl z1; polyfixveck z2; unsigned int i;
@@ -96,6 +97,22 @@ void haetae_axisa_fire(void){
   trigger_low();
 #endif
   memcpy(g_z1raw, &z1, sizeof(g_z1raw));   // 호스트 'x' 스트리밍/분류·복원용
+}
+/* 축 A T1: 저장상태로 c·s1 재계산(글리치 표적) 후 +y → z1. 동일 j_y1 재사용으로 2-trace 차분의 y1 정확 상쇄.
+   cs1 사전 0화(트리거 밖) → 물리 loop-abort 스킵 시 z1=j_y1(=y, 쓰레기 아님). cs1.vec[0]=c 는 창 안에서 재설정. */
+void haetae_axisa_fire_t1(void){
+  polyfixvecl z1; polyvecl cs1; poly chat; unsigned int i;
+  for (i = 1; i < HAETAE_L; ++i) memset(&cs1.vec[i], 0, sizeof(poly));   // 사전 0화(트리거 밖)
+  trigger_high();                          // c·s 창 시작(full-sign 239행과 동일 의미)
+  cs1.vec[0] = j_c; chat = j_c; poly_ntt(&chat);
+  for (i = 1; i < HAETAE_L; ++i) {
+    poly_pointwise_montgomery(&cs1.vec[i], &chat, &j_s1.vec[i - 1]);
+    poly_invntt_tomont(&cs1.vec[i]);
+  }
+  trigger_low();
+  polyvecl_cneg(&cs1, j_b & 1);
+  polyfixvecl_add(&z1, &j_y1, &cs1);       // 융합 +y → z1 = j_y1 + (-1)^b·LN·c·s1 (스킵되면 = j_y1)
+  memcpy(g_z1raw, &z1, sizeof(g_z1raw));
 }
 #endif
 
@@ -235,6 +252,12 @@ reject:
   poly_challenge(&c, buf, mu);
 
   /* 3. z = y + (-1)^b c*s   === 표적 연산 구간(T1: c*s 스킵, T2: +y 스킵) === */
+#ifdef T1_CS_ZEROINIT
+  /* 축 A T1 인과대조: c·s 직전(트리거 밖) cs 사전 0화 → 물리 loop-abort 스킵 시 z=y (쓰레기 아님).
+     cs1.vec[0]=c 는 아래 240행에서 재설정. 미정의 시 컴파일 제외(레퍼런스 불변). */
+  for (unsigned int _z = 1; _z < HAETAE_L; ++_z) memset(&cs1.vec[_z], 0, sizeof(poly));
+  memset(&cs2, 0, sizeof(cs2));
+#endif
   TRIG_BROAD_HI();                         // 기본(g_trig_line<0): 전체 c·s~+y 트리거
   TRIG_HI(FL_CS);                          // T1 정밀 트리거: c·s 직전
   cs1.vec[0] = c;
@@ -318,6 +341,7 @@ reject:
   /* fast-jig prime: 채택 시도의 y·cs 를 저장 → 이후 'J' 1 이 +y 만 재실행(글리치 표적). */
   memcpy(&j_y1, &y1, sizeof(j_y1));   memcpy(&j_y2, &y2, sizeof(j_y2));
   memcpy(&j_cs1, &cs1, sizeof(j_cs1)); memcpy(&j_cs2, &cs2, sizeof(j_cs2));
+  memcpy(&j_s1, &s1, sizeof(j_s1));   j_c = c;   j_b = (uint8_t)b;   // T1 fire_t1 용(s1=NTT, 채택 c/b)
   j_primed = 1;
 #endif
 

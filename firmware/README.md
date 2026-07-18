@@ -32,7 +32,18 @@ done
 
 - `CRYPTO_TARGET=NONE` (HAETAE 자체 구현이라 AES 예제와 달리 NONE), `SS_VER=SS_VER_1_1`.
 - **축 B**(소프트웨어 라인 결함주입, 대응기법 공정 비교): 위 명령에 `FAULT_SIM=1` 추가 → `haetae-<V>-FSIM-*.hex`.
-- **축 A**(하드웨어 클럭글리치 지그): `AXISA_JIG=1` 추가(FAULT_SIM 자동 포함).
+- **축 A**(하드웨어 클럭글리치 지그): `AXISA_JIG=1` 추가(FAULT_SIM 자동 포함). `'J'` 지그 커맨드:
+  `0`=prime(정상 서명 1회+상태 저장), `1`=fire(+y 재실행=T2 표적), `2`=fire_t1(c·s 재실행=T1 표적).
+- **축 A T1(c·s 스킵 → z=y, 2026-07-18 실증)**: `T1_CS_ZEROINIT=1`로 c·s 직전 `cs` 버퍼를 사전 0화하면
+  물리 loop-abort 스킵이 쓰레기가 아니라 `z=y`(=해당 다항식 블록 제거)를 내어, 2-trace 차분으로 `s1`
+  복원이 성립한다(인과 대조 빌드). **미수정 레퍼런스는 이 초기화가 없어 저항**하므로, 매크로 가드로
+  기본 빌드는 바이트동일이다.
+  ```bash
+  make clean PLATFORM=CW308_STM32F4 CRYPTO_TARGET=NONE SS_VER=SS_VER_1_1 VARIANT=baseline AXISA_JIG=1 T1_CS_ZEROINIT=1
+  make       PLATFORM=CW308_STM32F4 CRYPTO_TARGET=NONE SS_VER=SS_VER_1_1 VARIANT=baseline AXISA_JIG=1 T1_CS_ZEROINIT=1
+  cp simpleserial-haetae-CW308_STM32F4.hex ../prebuilt/haetae-JIG-T1-fused-CW308_STM32F4.hex
+  ```
+  실험·결과·재현은 `../../test/2026-07-18/`(HANDOFF.md, results/, code/) 참조.
 - 상세 빌드/호스트 프로토콜은 `simpleserial-haetae/BUILD.md` 참조.
 
 ## 구성
@@ -49,7 +60,7 @@ firmware/
    │  ├─ randombytes_drbg.c   고정 시드 결정론 DRBG (baseline↔대응 1:1 비교용, 실험 전용)
    │  ├─ sign_baseline.c      레퍼런스 keypair/verify 제공원
    │  └─ sign_irv.c           독립형 IRV 참조 구현 (빌드 미포함 — 실제 빌드는 haetae_sign_cm.c)
-   └─ prebuilt/               사전 빌드 hex (변형별, +FSIM 축B, +INT 클럭)
+   └─ prebuilt/               사전 빌드 hex (변형별, +FSIM 축B, +INT 클럭, +JIG-T1-fused/FSIM-T1 축A T1)
 ```
 
 ## 참고

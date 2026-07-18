@@ -319,6 +319,66 @@ def run_t1_jig(hexname=None, N=400, W_RANGE=(30, 75), O_RANGE=(-15, 15),
     _save(out, rows, cnt, best, [L[:5] for L in leaks], 'jig')
     return dict(cnt), rows
 
+# ============================ 누적 완전복원 (노트북판 — t1_auto.py 자율 드라이버와 동일 로직) ============================
+def run_t1_accumulate(hexname=None, ext_bands=((41400, 41470), (91300, 92000), (142100, 142750)),
+                      N=900, W_RANGE=(55, 68), O_RANGE=(12, 14), rep=2, out='t1_accum', live_every=0):
+    """세 밴드(다항식 3개의 clean-스킵 지점)를 dense 스캔해 블록별 256/256 을 모아 s1 768/768 완전복원.
+       각 결함 서명의 z_fault 를 캡처→차분 복원→per-block 검증→누적. 3블록 확보 시 조기 종료.
+       (커맨드라인 자율판: t1_auto.py t1_accum2.json — 노트북 커널이 scope 를 놓은 상태에서 실행.)"""
+    hexname = hexname or 'haetae-JIG-T1-fused-{}.hex'.format(PLATFORM)
+    scope.io.hs2 = 'clkgen'; flash(hexname); scope.io.hs2 = 'glitch'; scope.adc.timeout = 3
+    time.sleep(0.2); recover_target(); ss_trig(FL['CS']); scope.glitch.repeat = 1
+    t1_prime_jig()                                    # Z_CLEAN/C_CLEAN/S1_CLEAN 캡처 + 동일-nonce 사전검사
+    print('  ext_bands =', list(ext_bands), '| 목표: 3블록 각 256/256 누적 → 768/768')
+    block_cov = [False, False, False]; block_best = [0, 0, 0]; block_at = [None, None, None]
+    cnt = collections.OrderedDict(golden=0, T1_leak=0, other=0, mute=0); rows = []; best = 0.0
+    _adc_t = scope.adc.timeout; scope.adc.timeout = 0.25
+    it = trange(N, desc='T1 accumulate') if not live_every else range(N)
+    emit = (it.write if not live_every else print)
+    for i in it:
+        lo, hi = random.choice(list(ext_bands)); e = random.randint(lo, hi)
+        w = random.randint(*W_RANGE); o = random.randint(*O_RANGE)
+        if scope.adc.state: _reprime_t1()
+        set_glitch(e, w, o); scope.glitch.repeat = int(rep)
+        scope.arm(); target.flush(); target.simpleserial_write('J', bytes([2]))
+        try: scope.capture()
+        except Exception: pass
+        r = target.simpleserial_read_witherrors('r', 16, timeout=1000, glitch_timeout=400)
+        d = bytes(r['payload']) if (r['valid'] and r['payload'] is not None) else None
+        cls = 'mute'; rate = 0.0; bm = ''
+        if d is None:
+            cls = 'mute'; _reprime_t1()
+        elif d == _D0:
+            cls = 'golden'
+        else:
+            z1 = read_z1raw(target)
+            rr = recover_s1_from_two_traces(Z_CLEAN, z1, C_CLEAN)
+            if rr.get('ln_exact'):
+                v = verify_s1(rr.get('s1ntt'), S1_CLEAN, C_CLEAN); rate = v['rate']; best = max(best, rate); bm = str(v['block_match'])
+                for bi in range(3):
+                    if v['block_match'][bi] > block_best[bi]:
+                        block_best[bi] = v['block_match'][bi]; block_at[bi] = (e, w, o, rep)
+                    if v['block_match'][bi] >= 254 and not block_cov[bi]:
+                        block_cov[bi] = True
+                        emit('· 블록 s1[%d] 복원 %d/256 @ext=%d w=%d (누적 %d/3)' % (bi, v['block_match'][bi], e, w, sum(block_cov)))
+                cls = 'T1_leak' if v['full'] else 'other'
+            else:
+                cls = 'other'
+        cnt[cls] = cnt.get(cls, 0) + 1
+        rows.append((int(e), int(w), int(o), int(rep), cls, '%.3f' % rate, bm))
+        if not live_every: it.set_postfix(blk='%d/3' % sum(block_cov), best='%.0f%%' % (100 * best), **cnt)
+        if sum(block_cov) == 3:
+            emit('★★ 누적 완전복원: 3블록 모두 clean 복원 → s1 768/768 (다중결함 누적)')
+            break
+    scope.glitch.repeat = 1; scope.adc.timeout = _adc_t
+    with open(out + '.csv', 'w', newline='') as f:
+        wr = csv.writer(f); wr.writerow(['ext', 'width', 'offset', 'rep', 'class', 'rate', 'block_match']); wr.writerows(rows)
+    full = (sum(block_cov) == 3)
+    print('DONE 누적: blocks_recovered=%d/3 | block_best=%s /256 | accumulated_full=%s' % (sum(block_cov), block_best, full))
+    print('  block_at =', block_at, '| saved %s.csv' % out)
+    if full: print('  ⇒ HAETAE 비밀키 s1(768계수) 물리 완전복원 (인과대조 빌드 + 고정 nonce 조건).')
+    return {'accumulated_full': full, 'block_cov': block_cov, 'block_best': block_best, 'block_at': block_at}
+
 # ============================ 재현 검증(paper-grade) + 저장 ============================
 def verify_t1_leak(e, w, o, rep=1, K=30, path='jig'):
     """발견된 파라미터를 K회 재현하여 s값 복원의 안정성/정확성 정밀 검증.
@@ -375,6 +435,6 @@ if _missing:
           '→ Lab_HAETAE_F4_EXP7_AxisA.ipynb 의 EXP7-a 셀을 먼저 실행하고  %run -i exp7_t1_driver.py  로 재로드')
 else:
     print('사전점검 OK — EXP7-a 전역 재사용 확인 (scope/target/flash/set_glitch/ss_trig/FL/SIGN_MS/PLATFORM)')
-print('로드 완료 — validate_t1_chain_sw()[글리치X, 체인검증]  /  run_t1_fullsign()  /  run_t1_jig()  /  verify_t1_leak(...)')
+print('로드 완료 — validate_t1_chain_sw() / run_t1_fullsign() / run_t1_jig() / run_t1_accumulate()[★768/768] / verify_t1_leak()')
 print('전제: EXP7-a 실행 완료 + TRIG_POINT=FL["CS"]. fullsign=기존 haetae-baseline-FSIM-*.hex 로 즉시 실행(저항 특성화).')
 print('      클린 T1 누설(인과 대조)은 펌웨어 EDIT 1(cs pre-zero)+EDIT 2(fire_t1) 필요 → T1_FIRMWARE_PATCH.md')
