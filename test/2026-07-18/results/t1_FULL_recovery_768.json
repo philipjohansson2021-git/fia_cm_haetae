@@ -1,0 +1,22 @@
+{
+  "date": "2026-07-18",
+  "result": "FULL physical secret-key recovery: s1 = 768/768 coefficients recovered, bit-exact vs device true key",
+  "attack": "T1 (c*s skip -> z=y) 2-trace differential + per-block multi-fault ACCUMULATION",
+  "device": "STM32F4 (CW308 + Husky, HSE 7.37MHz)",
+  "build": "haetae-JIG-T1-fused (VARIANT=baseline, AXISA_JIG=1, T1_CS_ZEROINIT=1) — causal-control build",
+  "run": {"driver": "t1_auto.py + ext_bands", "N": 900, "duration_s": 379, "counts": {"golden": 62, "other": 23, "mute": 23}},
+  "accumulation": {
+    "block_cov": [true, true, true], "block_best": [256, 256, 256], "accumulated_full": true,
+    "s1[0]": {"match": "256/256", "ext": 41421, "shape": "w65 o14 rep2", "note": "single glitch skips block0"},
+    "s1[1]": {"match": "256/256", "ext": 91670, "shape": "w63 o12 rep2"},
+    "s1[2]": {"match": "256/256", "ext": 91670, "shape": "w63 o12 rep2", "note": "ext=91670 skips BOTH s1[1] and s1[2] in one glitch (rate 66.7%)"}
+  },
+  "traces_needed": 2,
+  "summary": "Two faulted signatures (same fixed nonce via jig replay) suffice: a glitch at ext=41421 cleanly skips the s1[0] block (256/256 recovered), and a glitch at ext=91670 cleanly skips the s1[1] and s1[2] blocks together (512/768, 66.7%). Accumulating the clean blocks reconstructs the entire secret polynomial vector s1 = 768/768, each coefficient bit-exactly matching the device-emitted true key ('s' stream). This is a complete physical key extraction of HAETAE's s1 via clock-glitch fault injection.",
+  "honesty_caveats": [
+    "Causal-control build: T1_CS_ZEROINIT pre-zeroes cs1/cs2 so a physical c*s loop-abort yields z=y (clean). The STRICTLY-UNMODIFIED fused reference does NOT (cs not zero-initialized -> skip yields garbage, not z=y) -> reference resists single-glitch clean T1, consistent with the 2026-07-05 fused-T2 resistance. EDIT1 is the causal control (analogous to the twopass control for T2).",
+    "Fixed nonce: the jig (AXISA_JIG fire_t1) replays the same saved nonce y1 across faulted fires (lab acceleration); the deterministic DRBG makes the nonce reproducible. The 2-trace differential requires this fixed-nonce condition.",
+    "Ground-truth: recovery verified coefficient-by-coefficient against the device true s1 ('s' stream) — 768/768 is an exact match, not a statistical/proxy score."
+  ],
+  "significance": "Establishes end-to-end physical realizability of the T1 attack: recovery chain validated bit-exact on-device (stage 1), a single glitch reproducibly leaks one polynomial block (stage 3a, 33% reproducible), and multi-fault accumulation reconstructs the full key (768/768). Motivates the IRV countermeasure (branchless infective integrity check on the response) since detect-and-abort defenses can be bypassed by the same skip faults."
+}

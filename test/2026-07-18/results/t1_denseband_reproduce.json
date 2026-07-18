@@ -1,0 +1,12 @@
+{
+  "date": "2026-07-18",
+  "stage": "3a-repro (dense band scan, reproduces the 33% partial)",
+  "sweep": {"N": 500, "ext_range": [41000, 42000], "width": [55, 68], "offset": [12, 14], "repeat": 2},
+  "outcome_counts": {"golden": 280, "mute": 111, "other": 109, "T1_leak": 0},
+  "partial_leak_hits_33pct": 28,
+  "band": {"ext_start": 41439, "ext_end": 41991, "width_cycles": 552,
+           "rate_at_start": 0.333, "rate_at_end": 0.302,
+           "note": "monotonic decrease with ext; cleanest single-block recovery (256/768) at ext=41439"},
+  "interpretation": "The 33% partial physical key recovery is REPRODUCIBLE (28 hits over a ~550-cycle band, not a fluke). A single clock glitch on the c*s stage at ext~41439 (offset 13, rep 2, width 56-67) reproducibly recovers exactly ONE secret polynomial block (256/768 = 1/3 of s1) via the 2-trace differential. As ext increases across the band, the block is progressively computed so recovery drops 33.3%->30.2%. No 67%/100% found in ext 0-42000 -> a single glitch cleanly leaks one block; full-key recovery requires either the loop-entry band (all blocks) or accumulation of multiple block-leaks.",
+  "next": "t1_auto.py: autonomous full-c*s scan (0~192247) with per-block accumulation, testing whether the other two blocks have reachable clean-skip bands (-> accumulate to 768/768) or only one block is reachable (-> 33% is the single-glitch ceiling). Result pending."
+}

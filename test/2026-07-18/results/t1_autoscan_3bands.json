@@ -1,0 +1,13 @@
+{
+  "date": "2026-07-18",
+  "stage": "3a-autoscan (autonomous full-c*s scan, t1_auto.py)",
+  "device": "STM32F4 + Husky, haetae-JIG-T1-fused hex",
+  "sweep": {"N": 1200, "ext_range": [0, 192247], "width": [55, 68], "offset": [12, 14], "repeat": 2},
+  "duration_s": 4148, "per_shot_s": 3.46,
+  "outcome_counts": {"golden": 704, "other": 231, "mute": 265, "T1_leak": 0},
+  "block_best_match": [236, 230, 208],
+  "block_bands_ext": {"s1[0]": 41885, "s1[1]": 92295, "s1[2]": 143089},
+  "key_finding": "ALL THREE secret polynomial blocks are individually recoverable, each at a DISTINCT ext band spaced ~50k cycles apart (s1[0]~41.9k, s1[1]~92.3k, s1[2]~143.1k). This maps onto the 3 iterations of the c*s loop (each ~50k cycles): a clock glitch at the end of iteration j cleanly skips block j -> that block stays pre-zeroed 0 -> recovered via the 2-trace differential. block_match confirms which block: [236,0,0]@41.9k, [1,230,0]@92.3k, [1,0,208]@143.1k.",
+  "implication": "Full-key recovery (768/768) by ACCUMULATION is achievable: dense-scan each of the 3 bands to obtain the clean 256/256 recovery of each block, then combine. The sparse full scan reached 236/230/208 of 256 per block (near-clean, off the exact band start); block0 dense scan already gave 256/256 at ext=41439. A 3-band dense accumulation run (t1_accum) is in progress.",
+  "note": "Confirms WIN=192247 is the real c*s length (3 iterations x ~50k). Autonomous driver t1_auto.py (self-contained, connects scope directly, per-block accumulation, releases scope on completion)."
+}

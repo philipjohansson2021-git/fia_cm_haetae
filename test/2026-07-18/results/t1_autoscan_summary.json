@@ -1,0 +1,61 @@
+{
+ "N": 1200,
+ "dur_s": 4148.2,
+ "per_shot_s": 3.46,
+ "WIN": 192247,
+ "ext": [
+  0,
+  192247
+ ],
+ "shape": {
+  "w": [
+   55,
+   68
+  ],
+  "o": [
+   12,
+   14
+  ],
+  "rep": 2
+ },
+ "counts": {
+  "golden": 704,
+  "T1_leak": 0,
+  "other": 231,
+  "mute": 265
+ },
+ "best_single_rate": 0.307,
+ "block_cov": [
+  false,
+  false,
+  false
+ ],
+ "block_best": [
+  236,
+  230,
+  208
+ ],
+ "blocks_recovered": 0,
+ "block_at": [
+  [
+   41885,
+   66,
+   12,
+   2
+  ],
+  [
+   92295,
+   55,
+   14,
+   2
+  ],
+  [
+   143089,
+   55,
+   14,
+   2
+  ]
+ ],
+ "accumulated_full": false,
+ "single_shot_leaks": []
+}

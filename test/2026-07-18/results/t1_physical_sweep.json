@@ -1,0 +1,15 @@
+{
+  "date": "2026-07-18",
+  "stage": "3a (physical clock glitch, jig fire_t1)",
+  "device": "STM32F4 (CW308 + Husky, HSE 7.37MHz), haetae-JIG-T1-fused hex (AXISA_JIG=1 T1_CS_ZEROINIT=1)",
+  "sweep": {"N": 600, "ext_range": [0, 50000], "width": [30, 75], "offset": [-15, 15], "repeat": [1, 2]},
+  "outcome_counts": {"golden": 492, "mute": 53, "other": 55, "T1_leak": 0},
+  "best_s1_recovery": 0.333,
+  "partial_leaks": [
+    {"ext": 41531, "width": 67, "offset": 13, "repeat": 2, "agreement": 0.328},
+    {"ext": 41421, "width": 56, "offset": 13, "repeat": 2, "agreement": 0.333}
+  ],
+  "mechanism": "33.3% = 256/768 = exactly ONE of the 3 secret blocks recovered. fire_t1's c*s1 is a 3-iteration loop (blocks s1[0..2]); a clock glitch at ext~41450 (offset 13, rep 2, width 56-67) causes a CLEAN loop-exit AFTER iteration 2 -> cs1.vec[3] stays at its pre-zeroed 0 -> z_fault block3 = y (nonce) -> differential recovers block3 = LN*c*s1[3] cleanly (blocks 1,2 cancel to 0). Physical loop-abort -> clean 2-trace differential -> partial key recovery is DEMONSTRATED on real hardware.",
+  "path_to_full": "Full 768/768 (T1_leak) requires the glitch to exit the cs1 loop at ENTRY (before iteration 1) so all 3 blocks stay 0. Loop boundaries are one-iteration apart at SMALLER ext than 41450; scan ext 0~42000 with the winning glitch shape (offset~13, rep 2, width 50-70) to hit the entry band.",
+  "speed_note": "sweep ran at 3.31s/shot (44min) because the adc.timeout=0.25 speed patch was not reloaded; with reload ~0.3s/shot."
+}

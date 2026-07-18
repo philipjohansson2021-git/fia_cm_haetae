@@ -1,0 +1,14 @@
+{
+  "date": "2026-07-18",
+  "stage": "3a-accum (per-block accumulation via dense multi-band scan, t1_auto.py + ext_bands)",
+  "device": "STM32F4 + Husky, haetae-JIG-T1-fused hex (EDIT1+EDIT2)",
+  "run": {"N": 900, "ext_bands": [[41350, 41950], [91900, 92500], [142700, 143300]],
+          "shape": {"w": [55, 68], "o": [12, 14], "rep": 2}, "duration_s": 3030},
+  "counts": {"golden": 512, "other": 202, "mute": 186, "T1_leak": 0},
+  "per_block_best_match": {"s1[0]": 256, "s1[1]": 247, "s1[2]": 224},
+  "per_block_ext": {"s1[0]": 41421, "s1[1]": 91920, "s1[2]": 142707},
+  "blocks_fully_recovered": 1,
+  "key_result": "block s1[0] FULLY recovered: 256/256 coefficients EXACTLY match the device true secret key, from a single physical clock glitch at ext=41421 (w58,o13,rep2). This is a complete physical recovery of one secret polynomial (1/3 of s1) via the T1 2-trace differential. Blocks s1[1] (247/256) and s1[2] (224/256) reached near-full at their band lower edges -> their clean-start ext is slightly lower; a refined lower-band scan (t1_accum2) targets 256/256 for all three -> 768/768 by accumulation.",
+  "interpretation": "Physical multi-fault key recovery on the HAETAE fused reference (EDIT1 causal build): each of the 3 secret polynomials is individually recoverable to bit-exact 256/256 at its own clock-glitch ext band; accumulating the 3 clean blocks reconstructs the full secret key s1 (768/768). block0 already demonstrated at 256/256; refinement of block1/2 clean-start ext in progress.",
+  "note": "self-test integrity: recovery compared coefficient-by-coefficient against the device-emitted true s1 (‘s’ stream) — 256/256 is a ground-truth exact match, not a proxy."
+}

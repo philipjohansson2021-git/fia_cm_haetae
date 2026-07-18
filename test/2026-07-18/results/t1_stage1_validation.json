@@ -1,0 +1,23 @@
+{
+  "date": "2026-07-18",
+  "stage": "1 (recovery-chain validation, no glitch)",
+  "method": "device SW T1 model (FL_CS: c*s := 0 -> z = y), 2-trace differential",
+  "device": "STM32F4 (CW308 + Husky, HSE 7.37MHz), baseline-FSIM hex",
+  "message_index": 0,
+  "note": "clean sign z_clean(=y+LN*c*s1) and FL_CS-fault sign z_fault(=y) captured for the same deterministic nonce; diff = z_clean - z_fault = (-1)^b*LN*c*s1 -> recover_s1_from_z1(diff, c) -> agreement vs device true s1ntt",
+  "result": {
+    "sign": "+",
+    "zero_slots": 0,
+    "recoverable": 768,
+    "match_recover": 768,
+    "match_768": 768,
+    "full": true,
+    "rate": 1.0,
+    "coeff_match": 768,
+    "coeff_levels": [-14321, 0, 14321],
+    "ln_exact": true
+  },
+  "interpretation": "T1 recovery chain (extract y -> z-y = c*s1 -> NTT-invert with public c -> s1) verified bit-exact on real device data: 768/768 NTT coefficients match the device true secret key, and coefficient domain shows 3 symmetric levels {-14321,0,14321} = Montgomery form of {-1,0,1} (eta=1). Reject loop did not diverge (msg#0 both signs accepted the same attempt). The recovery half of the T1 attack is confirmed on hardware; only physical y-extraction (clock glitch) remains.",
+  "GOLDEN_digest": "ba9f152c607b207fc6512635ba11388c",
+  "PSS": 4592
+}
