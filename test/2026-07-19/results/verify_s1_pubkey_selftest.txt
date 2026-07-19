@@ -1,0 +1,7 @@
+== HAETAE public-only s1 verification (review item W2) ==
+predicate uses ONLY pk (seed_A, b); secret shown for self-test only.
+q=64513  K*N=512  slack T=8
+
+[true s1      ] worst|2b1-w|=     2  bad(>8)=0/512  -> PASS
+[-s1 (wrong b)] worst|2b1-w|= 32244  bad(>8)=512/512  -> FAIL
+[1-coeff wrong] worst|2b1-w|= 32234  bad(>8)=512/512  -> FAIL

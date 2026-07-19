@@ -1,0 +1,28 @@
+{
+  "date": "2026-07-19",
+  "what": "T1 physical full-recovery independent reproduction (run_t1_accumulate, notebook path)",
+  "device": "STM32F405 + CW308 + ChipWhisperer-Husky, HSE-direct 7.37 MHz",
+  "hex": "haetae-JIG-T1-fused-CW308_STM32F4.hex (VARIANT=baseline AXISA_JIG=1 T1_CS_ZEROINIT=1)",
+  "prime_digest_d0": "5549c478ebfb044a32df34fafb0e18b4",
+  "N_cap": 900,
+  "shots_until_full": 594,
+  "ext_bands": [[41400, 41470], [91300, 92000], [142100, 142750]],
+  "W_RANGE": [55, 68], "O_RANGE": [12, 14], "rep": 2,
+  "counts": {"golden": 351, "other": 116, "mute": 127},
+  "block_best": [256, 256, 256],
+  "block_at_best": {"s1[0]": [41421, 62, 13, 2], "s1[1]": [91695, 55, 12, 2], "s1[2]": [91672, 67, 14, 2]},
+  "accumulated_full": true,
+  "minimal_faulty_signatures": 2,
+  "minimal_set": {
+    "sig1": {"ext": 41421, "width": 62, "offset": 13, "rep": 2, "block_match": [256, 0, 0], "rate": 0.333, "note": "iter1 skip -> s1[0]"},
+    "sig2": {"ext": 91672, "width": 67, "offset": 14, "rep": 2, "block_match": [0, 256, 256], "rate": 0.667, "note": "loop-abort after iter1 -> s1[1]+s1[2] together"}
+  },
+  "mechanism": "c*s = 3-iteration loop over the 3 secret polys; ext selects which iteration is disrupted. ~41.4k -> s1[0] single; ~91.7k -> s1[1]+s1[2] via loop-abort; ~142k -> s1[2]. Bands ~50k apart = per-iteration cycles.",
+  "verdict": "s1 768/768 recovered coefficient-exact vs device true key (2nd independent run; cf. 2026-07-18 t1_FULL_recovery_768.json).",
+  "honesty_conditions": [
+    "causal-control build T1_CS_ZEROINIT (cs pre-zeroed); the unmodified fused reference RESISTS (skip -> garbage)",
+    "fixed nonce via jig replay / deterministic DRBG (required by the 2-trace differential)",
+    "success judged by exact coefficient-wise match against the device true s1 (verification convenience, not an attack requirement)"
+  ],
+  "public_key_cross_check": "recovered s1 additionally confirmed WITHOUT the true-key oracle via the public-key consistency check (see code/verify_s1_pubkey.c, results/verify_s1_pubkey_selftest.txt)"
+}
