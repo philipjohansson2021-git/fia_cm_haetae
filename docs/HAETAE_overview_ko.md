@@ -79,7 +79,7 @@ $\mathbf{z}$는 상위비트/하위비트로 분해·압축돼 있어, 힌트 $h
 | ID | 결함 효과 | 결과 응답 | 누설 |
 |---|---|---|---|
 | T1 | $c\cdot\mathbf{s}_1$ 곱셈 스킵 | $\mathbf{z}\approx\mathbf{y}$ | nonce |
-| **T2** | $+\mathbf{y}$ 덧셈 스킵 | $\mathbf{z}=(-1)^b c\,\mathbf{s}_1$ | **$\mathbf{s}_1$ 직접(단일 트레이스)** |
+| **T2** | $+\mathbf{y}$ 덧셈 스킵 | $\mathbf{z}=(-1)^b c\,\mathbf{s}_1$ | **$\mathbf{s}_1$ 직접(단일 서명 출력)** |
 | RB | 거부 판정 스킵 | 경계초과 $\mathbf{z}$ | 통계적 키정보 |
 | LA | $\mathbf{y}$ 샘플링 loop-abort | 저엔트로피 $\mathbf{y}$ | nonce |
 

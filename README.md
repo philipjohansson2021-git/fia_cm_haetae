@@ -10,7 +10,7 @@ Attack)** 분석과, 이를 막는 **경량 대응기법 HAETAE-IRV** 의 구현
 
 1. **공격(Attack).** HAETAE 서명의 응답 계산 `z = y + (-1)^b·c·s1` 에 단일 결함을 주입하면
    비밀키가 노출됨을 보입니다. 특히 `+y` 덧셈을 건너뛰면(T2) `z = L_N·c·s1` 이 방출되어,
-   공개값 `c`만으로 **단일 트레이스에 비밀키 `s1`을 직접 복원**할 수 있습니다.
+   공개값 `c`만으로 **단일 서명 출력에 비밀키 `s1`을 직접 복원**할 수 있습니다.
 2. **대응기법(Countermeasure).** **HAETAE-IRV** = c·s 재계산 검증 + 서명경계 노름 재검사 +
    비밀키 무결성 검사 + **무분기 감염형(infective) 마스킹**. 탐지-후-중단 방식과 달리
    검사 분기를 두 번째 결함으로 건너뛰는 우회에 강합니다.
@@ -52,7 +52,7 @@ fia_cm_haetae/
 ## 관련 연구
 
 본 연구는 Lee, Kim, Ha, "Fault Injection Attacks on Post-Quantum Cryptography Algorithm
-HAETAE and Their Countermeasures," JKIISC 36(2), 2026 와 독립적이며, **T2 단일 트레이스
+HAETAE and Their Countermeasures," JKIISC 36(2), 2026 와 독립적이며, **T2 단일 서명 출력
 직접 복원**(공격)과 **무분기 감염형 대응**(검사-스킵 이차결함 내성)에서 구별됩니다.
 
 ## 라이선스

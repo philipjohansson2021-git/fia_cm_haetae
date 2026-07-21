@@ -16,7 +16,7 @@
      → 공개키만으로 정확·강건한 판별식임을 실증(참키 오라클 불필요).
 
 2. **W3 — 실서명('p') 경로 교차검증 드라이버** (`code/exp7_t1_xcheck.py`)
-   지그(fire_t1 재생)가 아니라 **진짜 full-sign 'p'** 2-trace로 T1 블록을 복원한다.
+   지그(fire_t1 재생)가 아니라 **진짜 full-sign 'p'** 2-서명 출력으로 T1 블록을 복원한다.
    거부 루프 때문에 채택 시도의 c·s를 표적하려면 **1-시도 메시지**가 필요 →
    호스트 벽시계가 아닌 **온디바이스 `scope.adc.trig_count`**(단일 c·s 창=B, K-시도≈K·B)로
    1-시도 메시지를 결정론적으로 선택. ĉ=0 슬롯이 없으면 3블록 누적 후 `verify_s1_pubkey`로 연계.
@@ -31,7 +31,7 @@
 ## 2. 정직성 조건(유지)
 
 - **인과대조 빌드** `T1_CS_ZEROINIT`(cs 사전0화) — 미수정 융합 레퍼런스는 저항(스킵=쓰레기, 07-05 T2 동형).
-- **고정 nonce**(지그 재생/결정론 DRBG) — 2-trace 차분의 요건(결정론 서명에선 자연 충족).
+- **고정 nonce**(지그 재생/결정론 DRBG) — 2-서명 출력 차분의 요건(결정론 서명에선 자연 충족).
 - **판정 = 참 s1 계수단위 일치**(검증 편의) — 단, W2 도구로 **공개키만으로도** 독립 확인 가능함을 실증.
 
 ## 3. 파일 (자체완결 재현 패키지)
@@ -46,7 +46,7 @@
 │  ├─ t1_auto.py                    # 자율 누적 드라이버(CLI; Husky free 상태에서 실행)
 │  ├─ t1_accum2.json                # t1_auto.py 설정 예(3밴드 누적)
 │  ├─ haetae_recover.py             # 복원 코어(NTT/디컨볼루션·디바이스 스트리밍)
-│  ├─ haetae_recover_t1.py          # T1 2-trace 차분/verify_s1 (오늘 패치: None-경로 block_match)
+│  ├─ haetae_recover_t1.py          # T1 2-서명 출력 차분/verify_s1 (오늘 패치: None-경로 block_match)
 │  ├─ export_s1_for_pubkey.py       # 복원 s1(NTT)→계수도메인 파일(verify_s1_pubkey 입력)
 │  ├─ verify_s1_pubkey.c            # W2 공개키 독립검증(HAETAE 레퍼런스 링크)
 │  ├─ build_verify_s1_pubkey.sh     # W2 WSL 빌드+self-test

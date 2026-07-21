@@ -82,7 +82,7 @@ $\mathbf{s}_1$이 본 연구의 복원 표적이다.
 - **거부 샘플링**(6단계): **서명 경계 $B_1$**(및 bimodal용 $B_0$)을 사용. 검증 경계 $B_2$와
   다르다($B_1<B_2$). 이 차이가 본 저장소 대응기법(HAETAE-IRV)의 (M2) 근거이다.
 - **결함 표적**: 5단계의 `c·s1`(T1)·`+y`(T2). T2 스킵 시 $\mathbf{z}_1=L_N\,c\,\mathbf{s}_1$
-  → 공개 $c,L_N$으로 단일 트레이스 $\mathbf{s}_1$ 복원(저장소 README 참조).
+  → 공개 $c,L_N$으로 단일 서명 출력 $\mathbf{s}_1$ 복원(저장소 README 참조).
 
 ---
 
@@ -115,7 +115,7 @@ $\mathbf{s}_1$이 본 연구의 복원 표적이다.
 | 단계 | 표적 | 결함 효과 | 누설 |
 |---|---|---|---|
 | Sign 5 (`c·s1`) | T1 | $\mathbf{z}\approx\mathbf{y}$ | nonce |
-| Sign 5 (`+y`) | **T2** | $\mathbf{z}_1=L_N c\,\mathbf{s}_1$ | **$\mathbf{s}_1$ 직접(단일 트레이스)** |
+| Sign 5 (`+y`) | **T2** | $\mathbf{z}_1=L_N c\,\mathbf{s}_1$ | **$\mathbf{s}_1$ 직접(단일 서명 출력)** |
 | Sign 6 (거부) | RB | 경계초과 $\mathbf{z}$ | 통계적 키정보 |
 | Sign 3 (샘플링) | LA | 저엔트로피 $\mathbf{y}$ | nonce |
 

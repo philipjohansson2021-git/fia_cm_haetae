@@ -25,7 +25,7 @@ ChipWhisperer-Husky + **CW308 STM32F4(STM32F405, 192KB SRAM)** 에서 **HAETAE-1
 
 - **double 7/7, irv 7/7, leeha 6/7**. leeha만 **거부우회(RB)** 누락 — 서명후검증이 검증경계 B2(>서명경계 B1/B0)를 써서 경계초과 z를 통과시킴(B1<B2 사각). IRV의 M2(B0+B1 재검사)가 차단.
 - 오탐(FL_NONE) 0: 4변형 모두 정상 서명 불변(GOLDEN).
-- baseline ADDY(T2)의 'LEAK'은 EXP1에서 **s1 768계수 100% 단일트레이스 복원**으로 실효성 입증.
+- baseline ADDY(T2)의 'LEAK'은 EXP1에서 **s1 768계수 100% 단일 서명 출력 복원**으로 실효성 입증.
 
 ## 표 B — 2차 결함 (1차 T2 누설 + 2차 탐지분기 스킵)  → `2ndorder.csv`
 
@@ -56,7 +56,7 @@ ChipWhisperer-Husky + **CW308 STM32F4(STM32F405, 192KB SRAM)** 에서 **HAETAE-1
 |---|:--:|:--:|:--:|---|
 | SEED / UNPACK | 100% | ~1.0 | — | 거부 무관(항상 발현) |
 | SIGNBIT / LSB / CS(T1) | ~23% | ~4.3 | — | 거부 의존 (Lee-Ha 보고 ~21%와 일치) |
-| **ADDY (T2)** | 83% | ~1.2 | **100%** | **단일 트레이스 직접 s1 복원** |
+| **ADDY (T2)** | 83% | ~1.2 | **100%** | **단일 서명 출력 직접 s1 복원** |
 | REJECT (RB) | 90% | ~1.1 | — | 거부판정 스킵 |
 
 → Lee-Ha Table 2(LSB·부호비트 21% / 언패킹·시드 100%)를 재현 = 셋업·방법론 교차검증.
@@ -74,7 +74,7 @@ ChipWhisperer-Husky + **CW308 STM32F4(STM32F405, 192KB SRAM)** 에서 **HAETAE-1
 **IRV는 유일하게** (1) 7지점 전면 차단(RB 포함), (2) 2차 결함 생존(무분기 감염), (3) double의 절반 비용.
 
 ## 포지셔닝/정직성
-- IRV의 개별 탐지(검증·부분이중·정상성)는 Lee-Ha와 원리 공유 → **차용 인정**. 기여 = **무분기 감염 통합 원리(2차결함 내성) + 서명경계 재검사(RB) + 단일트레이스 T2 공격 + HW 실증**.
+- IRV의 개별 탐지(검증·부분이중·정상성)는 Lee-Ha와 원리 공유 → **차용 인정**. 기여 = **무분기 감염 통합 원리(2차결함 내성) + 서명경계 재검사(RB) + 단일 서명 출력 T2 공격 + HW 실증**.
 - RB는 **본 연구의 위협모델 지점**(Lee-Ha 범위 밖). leeha의 RB 누락은 "verify-after-sign 기법의 구조적 사각(B1<B2)"이지 "Lee-Ha가 틀림"이 아님 — 논문에 정확히 한정.
 - 상세: 펌웨어 `code/firmware/`, 설계 `IRV_design_notes`, 포지셔닝 `novelty_positioning`(메인 워크스페이스 1_theory/).
 
