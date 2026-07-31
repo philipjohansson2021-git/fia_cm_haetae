@@ -1,0 +1,45 @@
+\section{IRV 잔차 계산과 감염의 수치 예제}
+\label{app:irv-example}
+
+본 부록은 알고리즘~\ref{alg:irv}의 잔차 누산기 $\delta$와 각 검사 $\textsc{Chk}_{Mi}$가 구체적으로
+어떻게 계산되는지, 그리고 $\delta$가 어떻게 \emph{분기 없이} 서명에 감염되는지를 작은 수치 예로 보인다.
+
+\subsection{잔차와 $\textsc{Chk}$의 정의}
+각 검사 $\textsc{Chk}_{Mi}$는 (i)~올바른 값을 \emph{재계산}하고, (ii)~서명에 실제로 방출된 값과
+\emph{XOR}(또는 차)을 취한다. 두 값이 같으면 잔차는 $0$, 다르면 $0$이 아니다. 6개 검사의 잔차를 비트
+OR로 누적하므로
+\[
+  \delta \;=\; \textsc{Chk}_{M1} \mathbin{|} \textsc{Chk}_{M2} \mathbin{|} \cdots \mathbin{|} \textsc{Chk}_{M6}
+\]
+가 되며, $\delta=0$은 ``모든 검사 통과''와 정확히 동치이다. 이어 폭 $w$비트 마스크
+\[
+  m \;=\; -\big((\delta \mathbin{|} (-\delta)) \gg (w-1)\big)
+\]
+는 $\delta=0$이면 $m=0$(전-$0$), $\delta\neq0$이면 $m$이 전-$1$이 되어, 서명에
+$\mathrm{PRF}(\text{sk\_seed}\Vert\delta\Vert\text{msg}) \wedge m$을 XOR한다. 즉 무결함이면 서명이 그대로
+보존되고, 결함이면 서명 전체가 난수화되어 무효가 된다 --- \emph{조건 분기 없이}.
+
+\subsection{응답 재계산 검사 $\textsc{Chk}_{M4}$의 수치 예}
+설명을 위해 응답의 한 계수만 본다. 어떤 계수에서 $y_1=100$, $c\svec_1=7$, 부호 $(-1)^b=+1$이라 하면
+올바른 응답은 $z_1 = 100+7 = 107$이다. $\textsc{Chk}_{M4}$는 방출된 $z_1$과 재계산값 $100+7=107$을
+XOR한다.
+
+\paragraph{무결함.} 방출값 $107$, 재계산값 $107$ $\Rightarrow$ $107 \oplus 107 = 0$. 따라서 이 계수의
+잔차는 $0$이고, 다른 검사도 모두 $0$이면 $\delta=0$, $m=0$이 되어 서명은 \textbf{변경되지 않는다}.
+
+\paragraph{T2 결함($+\yvec$ 스킵).} 이때 방출값은 $y$가 빠진 $z_1 = 7$이나 재계산값은 여전히
+$100+7=107$이다. $\Rightarrow$ $7 \oplus 107 = 108 \neq 0$. 따라서 $\delta \mathrel{|}= 108$로
+$\delta\neq0$이 되고,
+\[
+  m = -\big((108 \mathbin{|} (-108)) \gg (w-1)\big) = \underbrace{11\cdots1}_{w\text{비트}}
+\]
+이므로 서명은 $\mathrm{PRF}(\cdots)\wedge m = \mathrm{PRF}(\cdots)$와 XOR되어 \textbf{난수화(무효)}된다.
+즉 T2로 만든 누설 서명이 그대로 방출되지 못한다.
+
+\subsection{다른 검사의 잔차}
+같은 방식으로 나머지 검사도 잔차를 낸다: $\textsc{Chk}_{M1}$은 비밀키 체크섬을 재계산해 저장값과 XOR,
+$\textsc{Chk}_{M2}\cdot\textsc{Chk}_{M3}$은 시드/재유도한 $(\yvec,b)$의 불일치 비트,
+$\textsc{Chk}_{M5}$는 $\lVert\zvec\rVert^2$이 경계 $B_1^2 L_n^2$을 넘는지의 부호 비트(위반 시 $1$),
+$\textsc{Chk}_{M6}$은 표준 검증 실패 비트를 각각 잔차로 낸다. 어느 하나라도 $0$이 아니면 $\delta\neq0$이
+되어 위 A.2와 동일하게 서명이 무효화된다. 그러므로 IRV는 7개 오류 지점 중 무엇이 발생하든 \emph{비교
+분기 없이} 누설 서명의 방출을 막는다.

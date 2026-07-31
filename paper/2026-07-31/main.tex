@@ -1,0 +1,105 @@
+% =====================================================================
+% JKIISC 문체 및 편집 형태를 참고한 HAETAE 공격 중심 신규 한글 원고
+% 작성일: 2026-07-31
+%
+% 본 파일은 정보보호학회논문지의 2단 논문 형태를 참고한 작성 초안이다.
+% 학회가 제공하는 공식 클래스가 확보되면 문서 클래스와 여백만 교체하고
+% sections/*.tex의 본문은 그대로 사용할 수 있도록 분리하였다.
+% =====================================================================
+\documentclass[10pt]{article}
+
+\usepackage[english]{babel}
+\usepackage{kotex}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+\usepackage[
+  paperwidth=189mm,
+  paperheight=259mm,
+  top=15mm,
+  bottom=17mm,
+  left=14mm,
+  right=14mm
+]{geometry}
+\usepackage[colorlinks=true,allcolors=black]{hyperref}
+
+\setlength{\columnsep}{6mm}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\baselinestretch}{0.98}
+
+\titleformat{\section}
+  {\normalfont\bfseries\normalsize}
+  {\Roman{section}.}{0.5em}{}
+\titleformat{\subsection}
+  {\normalfont\bfseries\normalsize}
+  {\arabic{section}.\arabic{subsection}}{0.5em}{}
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\small}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.6em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.4em}
+\titlespacing*{\subsubsection}{0pt}{0.8em}{0.3em}
+
+\captionsetup{
+  font=small,
+  labelfont=normalfont,
+  labelsep=period,
+  justification=centering,
+  skip=4pt
+}
+\captionsetup[table]{name=Table,position=top}
+\captionsetup[figure]{name=Fig.,position=bottom}
+
+\renewcommand{\refname}{References}
+\newcommand{\zvec}{\mathbf{z}}
+\newcommand{\yvec}{\mathbf{y}}
+\newcommand{\svec}{\mathbf{s}}
+\newcommand{\Rq}{R_q}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+  \vspace*{1.0em}
+  {\LARGE\bfseries
+  HAETAE 서명 과정의 오류주입 취약성 분석과\\
+  T1 오류의 물리적 실현성 평가\par}
+  \vspace{0.8em}
+  {\normalsize Philip Johansson\par}
+  \vspace{1.0em}
+  {\large\bfseries
+  Fault Injection Vulnerability Analysis of HAETAE and\\
+  Physical Realizability Evaluation of the T1 Fault\par}
+  \vspace{0.6em}
+  {\normalsize Philip Johansson\par}
+\end{center}
+
+\vspace{1.5em}
+\begin{minipage}{0.94\textwidth}
+\input{sections/00_summary}
+\end{minipage}
+\vfill
+
+\clearpage
+\twocolumn
+
+\input{sections/01_introduction}
+\input{sections/02_background_related}
+\input{sections/03_vulnerability_analysis}
+\input{sections/04_experiments}
+\input{sections/05_discussion}
+\input{sections/06_conclusion}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}

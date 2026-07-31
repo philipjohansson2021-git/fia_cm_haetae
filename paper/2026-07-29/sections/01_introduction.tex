@@ -1,0 +1,57 @@
+\section{서론}
+\label{sec:intro}
+
+양자컴퓨팅 기술의 발전은 소인수분해 및 이산로그 문제에 기반한 기존 공개키 암호체계의 안전성을
+근본적으로 위협하고 있다. 이에 따라 미국 국립표준기술연구소(NIST)는 2024년 양자내성암호
+(Post-Quantum Cryptography, PQC) 디지털 서명 표준으로 \texttt{CRYSTALS-Dilithium}(ML-DSA)을
+선정하였으며~\cite{dilithium,fips204,nist_pqc}, 국내에서도 KpqC 공모를 통해 격자 기반 서명
+\texttt{HAETAE}가 최종 후보로 선정되었다. \texttt{HAETAE}~\cite{haetae}는 Module-LWE 및
+Module-SIS 문제에 안전성을 기반하는 Fiat--Shamir with Aborts 방식의 격자 서명이다. Gaussian
+샘플링에 의존하던 기존 스킴과 달리, 서명 응답 벡터를 고차원 $\ell_2$-노름 공(\emph{hyperball})
+상의 균등분포에 맞추어 거부 샘플링(rejection sampling)하고, 여기에 \texttt{BLISS}에서 도입된
+\emph{bimodal} 기법(부호 $b\in\{0,1\}$로 응답의 방향을 뒤집어 거부율을 낮추는 기법)을 결합한다.
+이 hyperball 균등 샘플링을 고정소수점(fixed-point) 산술로 구현함으로써, 서명 및 공개키 크기를
+효과적으로 줄이면서도 구현 효율을 확보한 것이 특징이다.
+
+그러나 암호 알고리즘의 수학적 안전성은 실제 하드웨어 구현 환경에서 그대로 보장되지 않는다.
+성능 최적화와 구현 제약으로 인해 새로운 공격 표면이 발생할 수 있으며, 이는 클럭
+글리치~\cite{yang2020}, 전압 글리치~\cite{oflynn2016}, 레이저~\cite{skorobogatov2002}, 전자기파
+~\cite{dumont2019} 등을 이용한 오류주입공격(Fault Injection Attack, FIA)에 취약해질 수
+있다~\cite{boneh1997,barel2006,espitau2016}. 오류주입공격은 암호 연산의 흐름이나 내부 데이터를
+왜곡하여 비밀 정보를 추출하는 강력한 능동적 공격이며, 단 한 번의 오류만으로도 전체 시스템의 안전성이
+위협받을 수 있으므로 구현자는 이를 심각하게 고려하여야 한다~\cite{ravi2022survey}. 이러한 위협은
+RSA~\cite{lenstra1996}, 타원곡선 암호~\cite{biehl2000,ciet2005} 등 기존 공개키 암호 체계 전반에서
+이미 확인된 바 있다. 실제로 \texttt{Dilithium}에 대해서도 단일 또는 소수의 오류로 비밀 키의 전부
+또는 일부를 복구할 수 있음이 실험적으로 입증되었다~\cite{ravi2019determinism,krahmer2024,elghamrawy2023}.
+
+\texttt{HAETAE}의 서명에서 가장 핵심적인 연산은 챌린지 $c$에 대한 응답 벡터를 계산하는
+$\zvec=\yvec+(-1)^b c\svec_1$이다. 여기서 $\yvec$는 일회용 난수, $b$는 bimodal 부호, $\svec_1$은
+비밀키 벡터로, 이 식은 서명 과정에서 비밀키를 직접 사용하는 유일한 단계이므로 오류주입의 주된
+표적이 된다. 그럼에도 \texttt{HAETAE}의 전체 서명 과정을 대상으로 한 응답 연산 오류 분석과 이에
+대한 경량 대응 연구는 아직 충분히 보고되지 않았다.
+
+이에 본 논문에서는 \texttt{HAETAE}의 결정론적 서명 구조를 분석하여 응답 연산에 대한 오류주입공격을
+체계적으로 규명하고, 이를 효율적으로 방어하는 대응 기법을 제안한다. 본 논문의 기여는 다음과 같다.
+\begin{itemize}
+  \item \texttt{HAETAE} 응답 연산에 대한 오류 분석을 제시하고, 결정론 격자 서명의 skip-addition
+        계열 공격~\cite{ravi2019determinism}을 HAETAE 응답에 특화하여 \textbf{$+\yvec$ 스킵이 단일
+        서명으로 $\svec_1$을 직접 복원}시킴을 수학적으로 보인다. 이를 STM32F405 전체 서명에서
+        소프트웨어 오류 주입(\textbf{에뮬레이션 단일 오류 모델}) 하에 실증한다($\svec_1$ 768계수 100\%
+        복원(가역 챌린지 조건), 복구 파이프라인은 self-test로 검증).
+  \item 기존 격자 오류 대응이 모두 \emph{탐지 후 중단(detect-and-abort)} 방식인 것과 달리,
+        \textbf{비교(분기) 연산에 의존하지 않는 감염형 무결성 보호 원리}를 격자 서명에 확장한
+        대응 기법 \textbf{IRV}를 제안한다(Seo 등의 RSA-Fermat 감염형 대응~\cite{seo2013}을 발전시킨 것).
+        이는 \emph{우리가 아는 한 격자 Fiat--Shamir 서명에 대한 최초의 무분기 감염형 대응}이다.
+  \item 단순한 서명 후 검증의 한계를 규명한다. \texttt{HAETAE}의 검증 경계 $B_2$는 서명 경계
+        $B_1/B_0$보다 느슨하여($B_1<B_2$) 거부 우회 오류를 통과시키며, IRV의 서명 경계 재검사가
+        이 사각지대를 차단한다.
+  \item 탐지 분기를 건너뛰는 2차 오류(탐지 분기 스킵 모델)에 대한 내성을 실험적으로 입증한다. 이중
+        연산과 서명 후 검증은 단일 분기 스킵으로 우회되나, 비교 연산이 없는 IRV는 무력화되지 않는다.
+  \item 소프트웨어 라인 주입(대응 기법의 공정 비교)을 통해 커버리지,
+        누설 방출률, 오버헤드, 연산 시간을 정량적으로 비교한다.
+\end{itemize}
+
+본 논문의 구성은 다음과 같다. \ref{sec:bg}장에서는 \texttt{HAETAE}와 오류주입공격의 배경을
+설명하고, \ref{sec:fault}장에서는 응답 연산의 오류 지점 분석과 단일 서명 비밀키 복원 공격을 다룬다.
+\ref{sec:irv}장에서는 제안 기법 IRV를 제시하고, \ref{sec:eval}장에서 실험적으로 평가한 뒤 한계를
+논의한다. \ref{sec:related}장에서 관련 연구를 다루고 \ref{sec:concl}장에서 결론을 맺는다.

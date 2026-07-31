@@ -1,0 +1,199 @@
+\section{실험 및 결과}
+\label{sec:experiments}
+
+본 장에서는 전체 서명 코드의 SW 오류 에뮬레이션으로 상류 연산,
+T1, T2 및 RB의 취약 효과를 확인한다. 물리 실험은 T1을 주 대상으로
+수행하며, 미수정 융합 구현의 T2 탐색은 소프트웨어 오류모델과 실제
+글리치 효과를 비교하기 위한 보조 실험으로 제시한다.
+
+\subsection{실험 환경 및 방법}
+
+실험 장비는 ChipWhisperer-Husky와 CW308 보드에 장착한
+STM32F405를 사용하였다. 대상 장치는 HSE 직결 7.37\,MHz로
+동작하며, 펌웨어는 \code{HAETAE}-120 전체 서명 과정을 포함한다.
+펌웨어 빌드에는 \code{arm-none-eabi-gcc} 13.2.1을 사용하였다.
+실험 간 정상 응답과 결함 응답을 비교하기 위해 고정 seed 기반의
+결정론 난수발생기를 사용하였다. 이는 오류 효과와 복원식을 검증하기
+위한 통제 조건이며 실제 배포용 난수 설정이 아니다.
+
+SW 오류 에뮬레이션에서는 지정한 서명 지점에서 1회만 발화하는 오류
+훅을 사용하였다. 상류 지점에서는 seed, 부호, 공개행렬 언패킹 및 LSB
+유도값을 변조하였다. T1 훅은 곱 결과를 0으로 대체하고, T2 훅은
+응답 계산에서 $\yvec$ 항을 제거한다. RB 훅은 거부 판정을 생략한다.
+각 지점은 서로 다른 메시지로 10회씩 세 배치, 총 30회 평가하였다.
+
+물리 실험에서는 글리치 위치(\code{ext\_offset}), 폭, offset 및
+repeat를 변화시키며 결과를 수집하였다. 결과는 정상 응답과 동일한
+Golden, 장치가 응답하지 않는 Mute, 목표 오류와 다른 값을 생성하는
+Other 및 분석 대상인 T1/T2 효과로 구분하였다. 물리 오류의 인과
+판정과 계수 비교에는 연구용 펌웨어의 내부 응답과 참 $\svec_1$
+스트림을 사용하였다.
+
+\subsection{SW 오류 에뮬레이션 결과}
+\label{subsec:software-faults}
+
+Table~\ref{tab:sw-fault-result}은 전체 서명 경로에서 각 의미론적 오류
+효과가 방출된 횟수를 나타낸다. 이 비율은 SW 훅을 활성화했을 때 거부
+경로를 통과한 빈도이며, 물리 글리치의 성공확률을 의미하지 않는다.
+
+\begin{table}[H]
+\centering
+\caption{Results of software fault emulation in the full signing path}
+\label{tab:sw-fault-result}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}l r X@{}}
+\toprule
+Point & Observed & Confirmed effect \\
+\midrule
+SEED    & 30/30 & seed 변조 응답 \\
+SIGNBIT & 7/30  & 부호 변조 응답 \\
+UNPACK  & 30/30 & 공개행렬 변조 응답 \\
+LSB     & 7/30  & challenge 경로 변조 \\
+T1      & 7/30  & 곱 항 제거 응답 \\
+T2      & 25/30 & nonce 항 제거 및 $\svec_1$ 복원 \\
+RB      & 27/30 & 거부 판정 우회 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+T2 의미론적 오류가 방출된 25회에는 식~\eqref{eq:t2-recovery}를
+적용하였다. 챌린지 $c$와 오류 응답을 NTT 영역으로 변환한 뒤 공개
+챌린지의 역원을 곱하여 세 개의 비밀 다항식을 복원하였다. 25회 모두
+$\svec_1$의 $3\times256=768$개 계수가 연구용 펌웨어가 출력한 참
+값과 일치하였다. 따라서 T2의 관측률은 25/30(83.3\%)이고, 관측된
+오류 응답에 대한 계수 복원률은 768/768이었다.
+
+T1 SW 훅에서도 동일 nonce의 정상 응답과 곱 항이 제거된 응답의
+차분으로 768개 계수의 복원 관계를 확인하였다. RB는 거부되어야 할
+응답이 후속 경로로 진행되는 것을 확인하였으나, 통계적 키 복구는
+수행하지 않았다. 따라서 상류 지점과 T1/T2의 결과는 목표 오류 효과와
+대수적 영향에 대한 E2 증거이며, RB는 경계 우회의 E2 증거로 한정한다.
+
+\subsection{T1 물리 글리치 및 복원 결과}
+\label{subsec:physical-t1}
+
+T1의 물리적 실현 조건을 평가하기 위해 곱 결과 버퍼를 사전에 0으로
+초기화한 \code{T1\_CS\_ZEROINIT} 인과대조 구현을 구성하였다.
+\code{AXISA\_JIG}는 동일한 nonce와 내부 상태에서 응답 계산을
+재실행하여 글리치 파라미터를 반복 평가한다. 정상 실행에서는 세 비밀
+다항식 블록이 $c\svec_1$으로 갱신되지만, 글리치로 생략된 반복의
+블록은 초기값 0을 유지한다. 따라서 곱셈 반복 생략과 T1 항 제거의
+인과관계를 블록 단위로 관찰할 수 있다.
+
+Table~\ref{tab:t1-campaign-result}은 T1 물리 실험의 탐색, 집중 복원
+및 별도 재현 과정을 나타낸다. 초기 600회 스윕에서 한 블록의
+256/768 복원 구간을 발견하였고, 500회 밀집 탐색에서 동일한
+33.3\% 블록 복원이 28회 재현되었다. 전체 응답 구간 1,200회
+탐색에서는 약 41.9k, 92.3k 및 143.1k cycle에 세 블록의 고유
+글리치 구간이 존재함을 확인하였다.
+
+\begin{table}[H]
+\centering
+\caption{T1 physical glitch campaigns on the causal-control build}
+\label{tab:t1-campaign-result}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}X r X@{}}
+\toprule
+Campaign & Shots & Main result \\
+\midrule
+Initial sweep & 600 & 한 블록 구간 식별 \\
+Dense reproduction & 500 & 256/768 효과 28회 \\
+Full-window scan & 1,200 & 세 블록 구간 식별 \\
+Three-band scan & 900 & 최대 256/247/224 \\
+Focused recovery & 108/900 & 768/768 복원 \\
+Separate run & 594/900 & 768/768 재현 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+세 구간을 이용한 첫 900회 탐색에서는 블록별 최대 일치도가
+256/256, 247/256 및 224/256으로 측정되었다. 이후 구간을 조정한
+집중 실행은 최대 예산 900회 중 108회에서 조기 종료되었다. 이 실행의
+\code{ext=41421} 결함 응답은 첫 번째 블록 256개를 복원하였고,
+\code{ext=91670} 결함 응답은 나머지 두 블록 512개를 동시에
+복원하였다. 두 결함 결과를 누적하여 $\svec_1$ 768/768 계수를
+확보하였다.
+
+동일 장비와 빌드에서 수행한 별도 실행은 최대 예산 900회 중 594회에서
+동일한 결과를 재현하였다. 이때 \code{ext=41421}에서 첫 블록
+256/256, \code{ext=91672}에서 나머지 두 블록 512/512가
+복원되었다. 결과적으로 공격 구간을 알고 있는 악용 단계의 최소 출력
+집합은 동일 nonce의 정상 기준 응답 1개와 유용한 결함 응답 2개이다.
+그러나 구간 탐색, 보정, 첫 복원 및 별도 재현을 모두 포함한 본 연구의
+물리 측정량은 총 3,902회이므로, 최소 출력 수를 전체 공격 획득 비용과
+동일하게 해석해서는 안 된다.
+
+이 결과는 실제 클럭 글리치가 반복문의 특정 블록을 제거하여 T1의
+대수적 관계를 물리적으로 생성할 수 있음을 보인다. 다만 버퍼를
+사전 초기화한 인과대조 구현, 고정 nonce 재생 및 내부 응답 판정 조건을
+사용하였으므로, 공식 미수정 구현의 종단 공격이 아니라 T1의 구현
+의존적 물리 실현성을 보이는 E3 결과로 해석한다.
+
+\subsection{미수정 융합 구현의 물리 T2 비교}
+\label{subsec:physical-t2}
+
+미수정 응답 구현은 각 계수에서 난수와 곱 결과를 읽고 더한 뒤 저장하는
+융합 구조를 사용한다. 이 구현에 실제 클럭 글리치를 주입하여
+$\yvec$ 항만 제거된 깨끗한 T2 응답이 발생하는지 탐색하였다.
+1차 스윕 300회에서는 Golden 274회, Mute 21회, Other 5회가
+관측되었다. 오류 발생 구간을 중심으로 수행한 350회 특성화에서는
+Golden 320회, Mute 25회 및 Other 5회가 관측되었다. 두 실험 모두
+깨끗한 T2는 0회였다.
+
+\begin{table}[H]
+\centering
+\caption{Physical T2 search results on the fused implementation}
+\label{tab:physical-t2-result}
+\footnotesize
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Test & Trials & Gold. & Mute & Other & T2 \\
+\midrule
+Sweep & 300 & 274 & 21 & 5 & 0 \\
+Characterization & 350 & 320 & 25 & 5 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SW 훅은 벡터 전체의 nonce 항을 한 번에 제거하지만, 융합 구현은
+1024개 계수의 load--add--store를 반복한다. 한 번의 국소 글리치로
+모든 nonce load만 제거하고 곱 결과와 store를 유지하기는 어렵다.
+다만 0/650 결과는 T2의 물리적 불가능성을 증명하지 않으며, 조사한
+장치, 빌드, 글리치 방식과 파라미터 범위에서 목표 효과가 관측되지
+않았음을 의미한다.
+
+\subsection{결과 비교}
+
+Table~\ref{tab:evidence-result}은 본 연구가 각 취약 지점에 대해
+확보한 검증 범위를 요약한다. 본 논문의 핵심 물리 결과는 T1이며,
+나머지 지점의 SW 결과는 의미론적 오류가 발생했을 때의 취약 조건과
+보안 영향을 확인하는 데 사용한다.
+
+\begin{table*}[t]
+\centering
+\caption{Scope and evidence of the evaluated HAETAE fault points}
+\label{tab:evidence-result}
+\small
+\begin{tabularx}{0.94\textwidth}{@{}l X X X@{}}
+\toprule
+Target & SW evidence & Physical evidence & Claim scope \\
+\midrule
+Upstream &
+SEED, SIGNBIT, UNPACK 및 LSB 오류 응답 재현 &
+본 연구 범위 밖 &
+선행연구 지점의 의미론적 취약성 확인 \\
+T2 &
+25/30 방출, 각 응답에서 $\svec_1$ 768/768 복원 &
+미수정 융합 구현에서 0/650 &
+치명적 항 제거 관계와 조사 범위 내 물리 미관측 \\
+T1 &
+동일 nonce 차분으로 $\svec_1$ 복원 &
+인과대조 구현의 두 실행에서 768/768 &
+본 연구의 핵심 물리 실현성 결과 \\
+RB &
+27/30 거부 판정 우회 &
+본 연구 범위 밖 &
+직접 키 복구가 아닌 잠재적 분포 취약성 \\
+\bottomrule
+\end{tabularx}
+\end{table*}

@@ -1,0 +1,63 @@
+% =====================================================================
+%  IRV : 오류주입공격과 감염형 무작위 검증 대응기법
+%  Overleaf 업로드용 마스터 파일 (한글 초안, kotex).
+%  구조:  main.tex  +  sections/*.tex  +  figures/*  +  references.bib
+%  컴파일: pdfLaTeX (kotex) → BibTeX → pdfLaTeX ×2
+%  그림은 figures/make_figures.py 로 생성: fig_coverage, fig_cost (2차오류는 표로 대체)
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[english]{babel}
+\usepackage{kotex}                 % 한글
+\usepackage{amsmath,amssymb,bm}
+\usepackage{graphicx}
+\usepackage{booktabs}              % \toprule \midrule \bottomrule
+\usepackage{float}                 % [H] : 표를 정의 위치에 고정(챕터 밀림 방지)
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{textcomp}
+\usepackage[letterpaper,top=2.3cm,bottom=2.3cm,left=2.7cm,right=2.7cm]{geometry}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\graphicspath{{figures/}}
+
+\newcommand{\zvec}{\mathbf{z}}
+\newcommand{\yvec}{\mathbf{y}}
+\newcommand{\svec}{\mathbf{s}}
+\newcommand{\Amat}{\mathbf{A}}
+
+\title{격자 기반 전자서명 HAETAE에 대한\\
+       오류주입공격과 감염형 무작위 검증 대응기법}
+\author{Philip Johansson}
+\date{2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/00_abstract}
+\end{abstract}
+
+% 영문 초록 (국문 학술지 제출 규정 대응; 필요 없으면 아래 블록 삭제)
+{\renewcommand{\abstractname}{Abstract}%
+\begin{abstract}
+\input{sections/00_abstract_en}
+\end{abstract}}
+
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_fault_analysis}
+\input{sections/04_countermeasure}
+\input{sections/05_evaluation}
+\input{sections/06_related}
+\input{sections/07_conclusion}
+
+\newpage
+\appendix
+\input{sections/08_appendix}
+
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

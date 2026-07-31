@@ -1,0 +1,196 @@
+\section{HAETAE 응답 연산 오류 분석과 공격 실현}
+\label{sec:fault}\label{sec:attack}
+
+\subsection{공격 대상 및 위협 모델}
+본 논문이 주목하는 공격 대상은 거부 샘플링을 통과하여 실제로 방출되는 응답 벡터
+$\zvec=\yvec+(-1)^b c\svec_1$의 계산 과정이다. 공격자는 이 연산이 수행되는 시점에 단일 오류를
+주입하고, 그 결과 출력된 서명을 관찰한다. 공격자는 방출된 서명(챌린지 $c$ 포함)만 관찰할 수 있으며,
+비밀키와 일회용 난수는 직접 관찰하지 못한다.
+
+\subsection{HAETAE 서명 알고리즘}
+\label{subsec:sign-alg}
+오류 지점을 정확히 규정하기 위해 먼저 \texttt{HAETAE}의 서명 절차를 정리한다(알고리즘~\ref{alg:sign}).
+서명은 거부 샘플링 루프로, 매 시도에서 (1)~초구(hyperball)에서 일회용 난수 $\yvec=(\yvec_1,\yvec_2)$와
+bimodal 부호 $b$를 샘플링하고, (2)~$\lfloor\yvec\rceil$로부터 챌린지 $c$를 유도하며(상위비트와
+$\textsc{LSB}$로 결정), (3)~응답 $\zvec=\yvec+(-1)^b c\svec_1$을 계산하고, (4)~서명 경계 $B_1$과
+bimodal 경계 $B_0$에 대한 거부 판정을 수행한다. 판정을 통과하면 서명 $\sigma=(c,\zvec,\mathbf{h})$를
+방출하고, 실패하면 새 난수로 재시도한다. 여기서 3단계는 서명 전 과정에서 \textbf{비밀키 $\svec_1$이
+사용되는 유일한 단계}이며, 따라서 오류주입의 핵심 표적이 된다.
+
+\begin{algorithm}[H]
+\caption{\texttt{HAETAE}.Sign (MODE2: $L{=}4$, $K{=}2$, $q{=}64513$, $L_n{=}2^{13}$). 오른쪽 주석은 오류 지점.}
+\label{alg:sign}
+\begin{algorithmic}[1]
+\State $(\Amat,\svec_1,\svec_2) \gets \textsc{UnpackSK}(sk)$
+      \Comment{\textbf{UNPACK}: $\Amat$ 변조}
+\State $seed \gets \textsc{Squeeze}(key,\mu,rnd)$
+      \Comment{\textbf{SEED}: $seed{\gets}0$ 고정}
+\Repeat
+  \State $(\yvec_1,\yvec_2,b) \gets \textsc{SampleHyperball}(seed,\mathit{ctr})$
+        \Comment{\textbf{SIGNBIT}: $b$ 반전}
+  \State $c \gets \textsc{Challenge}\big(\textsc{HighBits}(\Amat\lfloor\yvec_1\rceil{+}2\yvec_2),\,\textsc{LSB}(\lfloor\yvec_1\rceil_0),\,\mu\big)$
+        \Comment{\textbf{LSB}: 다른 $c$}
+  \State $(c\svec_1,c\svec_2) \gets (c\cdot\svec_1,\; c\cdot\svec_2)$ \quad(NTT 성분별 곱)
+        \Comment{\textbf{T1}: 스킵 $\Rightarrow \zvec{\approx}\yvec$}
+  \State $(c\svec_1,c\svec_2) \gets (-1)^b\,(c\svec_1,c\svec_2)$
+  \State $(\zvec_1,\zvec_2) \gets (\yvec_1{+}c\svec_1,\; \yvec_2{+}c\svec_2)$ \quad(고정소수점)
+        \Comment{\textbf{T2}: $+\yvec$ 스킵 $\Rightarrow \zvec{=}(-1)^b c\svec_1$}
+  \State $\mathit{reject} \gets \big(\lVert\zvec\rVert^2 > B_1^2 L_n^2\big) \,\lor\, \neg\,\textsc{Bimodal}_{B_0}(\zvec,\yvec,b)$
+        \Comment{\textbf{RB}: 판정 스킵 $\Rightarrow$ 경계초과 $\zvec$}
+\Until{$\neg\,\mathit{reject}$}
+\State \Return $\sigma \gets \textsc{Encode}(c,\zvec,\mathbf{h})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{오류 지점과 정보 누설}
+\label{subsec:faultpoints}
+알고리즘~\ref{alg:sign}의 각 연산은 잠재적 오류 표적이다. 서명 경로를 분석하여 7개 오류 지점을
+도출하였으며(요약은 표~\ref{tab:faultpoints}), 각 지점의 오류 효과와 그로 인한 누설을 함께 정리한다.
+이 중 네 가지는 응답 \emph{이전} 단계를 겨냥하며 선행 연구~\cite{lee2026haetae}에서 제시된 지점으로,
+대체로 정상 서명과의 \emph{차분}(둘 이상의 서명)이나 예측 가능해진 난수를 통해 비밀 정보에 접근한다.
+\begin{itemize}
+  \item \textbf{UNPACK}(1행): 공개 행렬 $\Amat$의 언패킹을 변조 $\to$ $\svec_1$ 차분 누설.
+  \item \textbf{SEED}(2행): 샘플링 시드를 0으로 고정 $\to$ $\yvec$가 예측 가능해져 난수 노출.
+  \item \textbf{SIGNBIT}(4행): bimodal 부호 비트 $b$ 반전 $\to$ $\svec_1$ 차분 누설.
+  \item \textbf{LSB}(5행): $\textsc{LSB}$ 추출을 건너뛰어 다른 챌린지 $c$ 유도 $\to$ $\svec_1$ 차분 누설.
+\end{itemize}
+나머지 세 가지(T1, T2, RB)는 \textbf{응답 연산 자체}를 직접 겨냥하는 본 논문의 지점으로, 더 강한 누설을
+만든다.
+\begin{itemize}
+  \item \textbf{T1 (CS)}(6행): $c\svec$ 곱셈을 건너뛰면 $\zvec\approx\yvec$가 되어 일회용 난수가 노출된다.
+        T2가 난수를 제거하는 것과 \emph{정반대}로 마스킹을 깨는 쌍이며, 노출된 난수를 이용한 복원(차분)은
+        본 논문의 범위를 벗어나 후속 연구로 남긴다.
+  \item \textbf{T2 (ADDY, 가장 치명적)}(8행): $+\yvec$ 덧셈을 건너뛰면 난수 마스크가 제거되어
+        $\zvec=(-1)^b c\svec_1$만 남는다. 챌린지 $c$가 공개이므로 NTT 역산으로 $\svec_1$을 \textbf{단일
+        서명에서 직접} 복원한다(\ref{subsec:key-recovery}절).
+  \item \textbf{RB (REJECT)}(9행): 거부 판정을 건너뛰면 서명 경계 $B_1/B_0$를 위반한 $\zvec$가 방출된다.
+        검증 경계 $B_2$가 더 느슨하여($B_0,B_1<B_2$) 단순 서명 후 검증은 이를 통과시키므로
+        (\ref{subsec:b1b2}절), 거부 샘플링 제거로 전사(transcript) 분포가 $\svec_1$에 의존하는
+        \emph{통계적} 누설이 된다.
+\end{itemize}
+응답 연산에서 덧셈이나 곱셈을 건너뛰는 skip-addition 오류는 결정론 격자 서명에 대해 이미 그 유효성이
+보고된 바 있으며~\cite{ravi2019determinism}, 본 논문이 주목하는 가장 치명적인 시나리오는 $+\yvec$ 덧셈이
+누락되는 T2이다.
+
+\subsection{오류 지점의 소프트웨어 구현}
+\label{subsec:fault-impl}
+대응 기법을 \emph{공정하게 비교}하려면 확률적 하드웨어 글리치로는 보장할 수 없는 ``모든 변형에 동일한
+오류''라는 조건이 필요하다. 이를 위해 각 오류 지점을 \texttt{-DFAULT\_SIM} 빌드에서 슈도코드 라인 단위로
+결정론적으로 주입한다. 호스트가 결함 라인을 지정하면(\texttt{'f'} 커맨드), 서명 1회에 대해 해당 라인에서
+\emph{단일 일시(one-shot transient)} 오류가 발화한다. 무방어(\textsf{baseline})와 세 대응
+변형(\textsf{double}/\textsf{leeha}/\textsf{IRV})이 \emph{동일한 훅}을 공유하므로, 같은 오류가 같은 위치에
+주입되어 \ref{sec:eval}장의 커버리지 비교가 성립한다. 각 지점의 실현은 다음과 같다(표~\ref{tab:faultpoints}의
+``구현'' 열).
+\begin{itemize}
+  \item 응답 이전 지점은 대상 값을 무력화한다: 시드 버퍼를 0으로(\textbf{SEED}), 언패킹된 $\Amat$를
+        0으로(\textbf{UNPACK}), $\textsc{LSB}$ 결과를 0으로(\textbf{LSB}), 부호 비트를 반전(\textbf{SIGNBIT}).
+  \item \textbf{T1}: 곱 결과 $c\svec_1,c\svec_2$를 0으로 덮어써 곱셈 스킵을 재현한다($\zvec\approx\yvec$).
+  \item \textbf{T2}: $+\yvec$ 덧셈에서 난수 항 $\yvec$를 0으로 대체한다($\zvec=(-1)^b c\svec_1$).
+  \item \textbf{RB}: 거부 분기(\texttt{if reject goto \dots})를 실행하지 않아 경계 초과 $\zvec$를 방출한다.
+\end{itemize}
+또한 대응 기법 평가를 위해, 탐지-후-중단(detect-and-abort) 분기를 겨냥하는 \textbf{2차 오류} 훅을 별도로
+두어 대응 기법의 검사 분기 스킵을 모델링한다(\ref{sec:eval}장). 이 결정론적 주입은 단일 일시 오류의
+\emph{논리적} 효과를 분리하며, 그 효과는 32비트 마이크로컨트롤러에서 물리적으로 실증된 명령어 스킵
+모델과 부합한다~\cite{moro2013}.
+
+\begin{table}[H]\centering
+\caption{\texttt{HAETAE} 서명의 오류 지점. ``구현''은 축약형 \texttt{-DFAULT\_SIM} 실현이며 $\dagger$ 표시는
+본 논문에서 도출한 지점이다.}
+\label{tab:faultpoints}
+\footnotesize
+\begin{tabular}{@{}lllll@{}}
+\toprule
+ID & 오류 효과 & 구현 & 누설 정보 & 출처 \\
+\midrule
+SEED                 & 시드 0 고정 $\to$ 예측 가능한 $\yvec$ & $seed{\gets}0$ & 난수 & \cite{lee2026haetae} \\
+SIGNBIT              & 부호 비트 $b$ 반전 & $b{\gets}b\oplus1$ & $\svec_1$(차분) & \cite{lee2026haetae} \\
+UNPACK               & 공개 행렬 $\Amat$ 변조 & $\Amat{\gets}0$ & $\svec_1$(차분) & \cite{lee2026haetae} \\
+LSB                  & \texttt{poly\_lsb} 스킵 $\to$ 다른 $c$ & $\textsc{lsb}{\gets}0$ & $\svec_1$(차분) & \cite{lee2026haetae} \\
+T1 (CS)$^\dagger$    & $c\svec$ 곱셈 스킵 $\to \zvec\approx\yvec$ & $c\svec{\gets}0$ & 난수 & 본 논문 \\
+T2 (ADDY)$^\dagger$  & $+\yvec$ 스킵 $\to \zvec=(-1)^b c\svec_1$ & $\yvec{\gets}0$ & \textbf{$\svec_1$ 직접} & 본 논문 \\
+RB (REJECT)$^\dagger$& 거부 판정 스킵 $\to$ 경계 초과 $\zvec$ & 분기 미실행 & 통계적 키 정보 & 본 논문 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{실험 환경}
+\label{subsec:setup}
+실험은 ChipWhisperer-Husky~\cite{oflynn2014}와 CW308 보드에 장착한 \textbf{STM32F405}(Cortex-M4,
+192\,KB SRAM) 타겟에서 수행하였다. 재현성을 위해 고정 시드 결정론
+난수 발생기를 사용하여 동일한 키와 난수로 서명을 반복하였다(배포용이 아닌 실험용 설정이다). 전체
+HAETAE-120 서명을 단일 펌웨어로 타겟에 탑재하였다.
+
+오류는 \texttt{-DFAULT\_SIM} 소프트웨어 라인 주입으로 주입한다. 이는 동일한 오류를 동일한 위치에
+결정론적으로 주입하여 대응 기법을 \emph{공정하게 비교}하기 위함이며, 단일 일시 오류의 \emph{논리적}
+효과를 분리하여 ``모든 변형에 동일한 오류''라는 조건을 성립시킨다.
+
+\subsection{T2 오류를 통한 단일 서명 비밀키 복원}
+\label{subsec:key-recovery}
+
+\paragraph{복원 직관(신호 관점).} 서명 응답 $\zvec=\yvec+(-1)^b c\svec_1$은 \emph{비밀 신호} $c\svec_1$이
+\emph{일회용 잡음} $\yvec$에 가려진 형태로 볼 수 있다. 정상 서명은 매번 다른 $\yvec$가 신호를 가려
+$\svec_1$을 드러내지 않으나, T2 오류는 $+\yvec$를 건너뛰어 \emph{잡음을 통째로 제거}해 $\zvec=\pm c\svec_1$만
+남긴다. 다항식 곱 $c\svec_1$은 순환 합성곱이므로 합성곱 정리에 따라 NTT(유한체 위의 FFT) 영역에서
+\emph{성분별 곱}이 되고, 따라서 \emph{공개} 챌린지의 스펙트럼 $\hat c$로 나누는(디컨볼루션) 것만으로
+$\svec_1$이 복원된다. 게다가 고정소수점 산술($L_n=2^{13}$) 덕분에 T2가 만드는 값은 $L_n$의 정확한
+배수여서, 서명에서 $c\svec_1$이 양자화 오차 없이 그대로 읽힌다.
+
+구체적으로 공격자는 다음 단계로 단일 오류 서명에서 $\svec_1$을 복원한다.
+\begin{description}
+  \item[단계 1)] 응답 계산 시점에 $+\yvec$ 덧셈을 건너뛰도록 오류를 주입한다. 내부 고정소수점 값은
+        $L_n(c\svec_1)$이나, 서명에 \emph{방출}되는 값은 반올림 $\tilde\zvec=\lfloor z_1+L_n/2\rfloor\gg13
+        = c\svec_1\bmod q$이다($L_n=2^{13}$). T2에서 $z_1$은 $L_n$의 정확한 배수이므로 이 반올림은
+        무손실이며, 공격자는 별도의 나눗셈 없이 $c\svec_1\bmod q$를 직접 관측한다.
+  \item[단계 2)] 챌린지 $c$는 서명에 함께 방출되어 공개이다. NTT가 합성곱을 성분별 곱으로 보내므로,
+        $\hat c=\mathrm{NTT}(c)$의 성분이 0이 아니면 각 비밀 다항식 $\svec_1^{(j)}$($j=1,2,3$)을
+        다음과 같이 복원한다.
+        \begin{equation}
+          \hat\svec_1^{(j)}[k]=\mathrm{NTT}(\tilde\zvec^{(j)})[k]\cdot \hat c[k]^{-1}\pmod q,
+          \label{eq:t2recover}
+        \end{equation}
+        여기서 $\hat c[k]^{-1}$는 $\bmod\,q$ 곱셈 역원이다. $q=64513$이 소수라도 $\hat c[k]=0$인 성분이
+        존재할 수 있으며($c$는 비영 계수가 $\pm1$인 고정 무게 다항식), 그 확률은 서명당 대략 $256/q\approx0.4\%$이다.
+        해당 성분에서는 정보가 소멸하나, $\svec_1$의 계수가 $\{-1,0,1\}$의 세 값만 가지므로($\eta=1$) 나머지
+        성분의 평가값으로 계수영역에서 유일하게 결정하거나 두 번째 서명으로 보완할 수 있다.
+  \item[단계 3)] 부호 $(-1)^b$와 ``깨끗한 스킵'' 여부는, 응답의 \emph{공개 성분}(아래 참조)을 이용해
+        공격자가 스스로 판정한다.
+\end{description}
+
+\paragraph{응답 벡터의 구조.} 레퍼런스에서 $c\svec_1$은 길이 $L=4$의 벡터로 계산되며, 그 0번째 성분은
+$c$ 자체(비밀과 무관)이고 성분 1--3만이 $c\cdot\svec_1[0..2]$이다. 따라서 방출 응답 $z_1$은
+1024계수($=4\times256$)이나 비밀은 768계수($=3\times256$)에만 담긴다. 성분 0은 $\pm c$로 공개되므로
+부호와 \emph{깨끗한 스킵}(clean skip) 여부의 판정 기준이 된다.
+
+\paragraph{실험 결과.} 위 절차를 T2 오류로 방출된 응답 $\zvec$에 적용한 결과, \textbf{$\svec_1$의 768개
+계수($3\times256$)가 진짜 비밀키와 $\bmod\,q$에서 100\% 일치}함을 확인하였으며, 공개 블록 일치를 통한
+자가 판정도 성립하였다. 식~\eqref{eq:t2recover}의 복원은 \texttt{HAETAE} 레퍼런스 정수 산술
+(Montgomery/NTT)과 비트 단위로 일치한다(복구 파이프라인 self-test). 즉 가역 챌린지 조건 하에서 단 한
+번의 T2 오류로, 다수의 서명 수집이나 통계적 분석 없이 비밀키 전체가 결정된다.
+
+\subsection{오류 지점별 누설 방출률}
+\label{subsec:repro}
+각 오류 지점을 단일(one-shot) 오류로, 메시지를 바꿔 가며 결정론적으로 주입하여, 주입된 오류가 거부
+샘플링을 통과해 누설 서명이 \emph{방출}되는 비율(누설 방출률)을 측정하였다(3개 배치 평균,
+표~\ref{tab:repro}). 이 값은 오류 모델 하에서 지점별 \emph{논리적}
+공격 난이도를 나타낸다.
+
+\begin{table}[H]\centering
+\caption{오류 지점별 누설 방출률(소프트웨어 오류 에뮬레이션; 거부 샘플링 통과 비율 = 지점별 공격 난이도).}
+\label{tab:repro}
+\small
+\begin{tabular}{@{}lrrrl@{}}
+\toprule
+지점 & 누설 방출률 & 시도/누설 & 키 복원 & 특성 \\
+\midrule
+SEED, UNPACK        & 100\% & $\sim$1.0 & --- & 거부 무관 \\
+SIGNBIT, LSB, T1    & $\sim$23\% & $\sim$4.3 & --- & 거부 의존 \\
+T2                  & 83\% & $\sim$1.2 & \textbf{100\%} & 단일 서명 직접 \\
+RB                  & 90\% & $\sim$1.1 & --- & 거부 판정 스킵 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+거부 의존 지점의 누설 방출률 $\sim$23\%는 선행 연구~\cite{lee2026haetae}가 보고한 거부 1회 통과 확률
+$\sim$21\%와, 거부 무관 지점의 100\%와 각각 부합하여 본 실험 환경의 타당성을 교차 검증한다. T2는
+83\%의 시도에서 누설이 방출되고, 방출된 모든 경우에 비밀키 768계수가 100\% 복원되어, 평균 1.2회의
+오류만으로 완전한 단일 서명 키 복원이 가능함을 보인다(누설 방출률·복원은 소프트웨어 오류 에뮬레이션 하의 측정이다).

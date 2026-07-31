@@ -1,0 +1,25 @@
+\texttt{HAETAE}, a lattice-based Fiat--Shamir signature scheme proposed for the
+post-quantum era, may be vulnerable to fault injection attacks (FIA) in real
+implementations regardless of its mathematical security. In particular, the response
+computation $\zvec=\yvec+(-1)^b c\svec_1$ is the only step in which the secret key and
+the one-time nonce are combined; if its integrity is not guaranteed, secret information
+can be exposed directly. We analyze the \texttt{HAETAE} signing procedure and identify
+three fault points in the response computation (skipping $c\svec$, skipping $+\yvec$, and
+rejection bypass). We show that skipping the $+\yvec$ addition enables the secret key
+$\svec_1$ to be recovered directly from a \emph{single} faulted signature. On a
+full-signature STM32F405 implementation with ChipWhisperer-Husky, under an
+\textbf{emulated single-fault model}, we recover all 768 coefficients of $\svec_1$ with
+100\% success from one faulted signature, and the recovery pipeline is confirmed by a
+self-test. We further propose \texttt{IRV}
+(Infective Randomized Verification), a
+lightweight countermeasure that unifies recomputation-based verification, signing-boundary
+norm re-checking, and secret-key integrity checking into \textbf{branchless infective
+masking} that does not rely on comparison (branch) operations. Experimentally, IRV
+(i)~blocks all seven fault points including rejection bypass, (ii)~resists second-order
+faults that skip detection branches, and (iii)~operates at less than half the
+\emph{signing time} of full double computation ($+14\%$ signing-time overhead), though it
+requires more code/RAM than double computation.
+
+\smallskip
+\noindent\textbf{Keywords.} Post-quantum cryptography; Lattice-based signature;
+\texttt{HAETAE}; Fault injection attack; Infective countermeasure; Single-signature key recovery.

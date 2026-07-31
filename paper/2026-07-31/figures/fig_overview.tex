@@ -1,0 +1,50 @@
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+  node distance=5mm,
+  block/.style={
+    draw,
+    rounded corners=1pt,
+    minimum height=12mm,
+    text width=20mm,
+    align=center,
+    font=\small
+  },
+  fault/.style={
+    draw,
+    rounded corners=1pt,
+    fill=black!7,
+    minimum height=12mm,
+    text width=22mm,
+    align=center,
+    font=\small
+  },
+  flow/.style={-{Latex[length=2mm]},thick}
+]
+\node[block] (sample) {$(\yvec,b)$\\샘플링};
+\node[block,right=of sample] (challenge) {챌린지 $c$\\유도};
+\node[fault,right=of challenge] (t1) {$c\svec_1$ 계산\\T1: 곱 항 제거};
+\node[fault,right=of t1] (t2) {$+\yvec$ 계산\\T2: nonce 제거};
+\node[fault,right=of t2] (rb) {거부 판정\\RB: 판정 우회};
+\node[block,right=of rb] (output) {인코딩 및\\서명 출력};
+
+\draw[flow] (sample) -- (challenge);
+\draw[flow] (challenge) -- (t1);
+\draw[flow] (t1) -- (t2);
+\draw[flow] (t2) -- (rb);
+\draw[flow] (rb) -- (output);
+
+\node[below=7mm of t1,align=center,font=\footnotesize] (t1effect)
+  {$\zvec_{\mathrm{T1}}\approx\yvec$\\동일 nonce 차분 필요};
+\node[below=7mm of t2,align=center,font=\footnotesize] (t2effect)
+  {$\zvec_{\mathrm{T2}}=\pm c\svec_1$\\단일 오류 응답 역산};
+\node[below=7mm of rb,align=center,font=\footnotesize] (rbeffect)
+  {경계 위반 응답\\잠재적 분포 누설};
+
+\draw[-{Latex[length=1.6mm]},dashed] (t1) -- (t1effect);
+\draw[-{Latex[length=1.6mm]},dashed] (t2) -- (t2effect);
+\draw[-{Latex[length=1.6mm]},dashed] (rb) -- (rbeffect);
+\end{tikzpicture}
+\caption{Overview of the analyzed fault points in the HAETAE signing procedure}
+\label{fig:fault-overview}
+\end{figure*}

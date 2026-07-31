@@ -1,0 +1,70 @@
+\section{제안 기법: IRV}
+\label{sec:irv}
+
+\subsection{설계 원리}
+이중 연산이나 서명 후 검증과 같은 기존 대응은 모두 ``두 결과가 다르면 폐기한다'' 또는 ``검증에
+실패하면 폐기한다''는 \emph{비교(분기) 연산}에 의존한다. 그러나 이러한 비교 연산 자체가
+오류주입공격에 취약하며, 단일 오류로 해당 분기를 건너뛰면 방어가 무력화된다~\cite{yen2000}. 제안하는
+IRV는 비교 연산에 의존하지 않고, 여러 무결성 검사의 잔차를 단일 누산기 $\delta$에 누적한 뒤
+이를 \textbf{분기 없이} 출력 서명에 확산(감염)시킨다. $\delta=0$이면 서명은 그대로 유지되어
+오탐이 없고, $\delta\neq0$이면 서명이 난수화되어 무효가 된다. ``오류가 발생하면 중단한다''는 조건
+분기가 존재하지 않으므로, \emph{탐지 분기를 건너뛰는} 2차 오류가 성립하지 않는다(감염 연산 자체를
+표적으로 하는 2차 오류에 대한 논의와 위협 모델의 범위는 \ref{sec:disc}절에서 다룬다).
+
+\subsection{구성 요소}
+제안 기법은 다음 무결성 검사(M1--M6, integrity-check Mechanism)를 응답 $\zvec$이 확정된 직후
+\emph{서명 알고리즘 흐름 순서로} 수행하고, 모든 잔차를 $\delta$에 누적한다(알고리즘~\ref{alg:irv}). 여기서 각 검사의 \emph{잔차}(residual)란 재계산한 올바른 값과 실제 방출값의
+불일치(XOR 또는 차)로, 오류가 없으면 $0$이고 오류가 있으면 $0$이 아니다. 이를 OR($\mathbin{|}$)로
+누적하므로 $\delta=0$은 ``모든 검사 통과''와 정확히 동치이며(정상 실행에서 항상 성립), 이 경우
+서명은 변경되지 않는다.
+\begin{itemize}
+  \item \textbf{M1} (비밀키 무결성): 비밀키 체크섬으로 서명 전 비밀키의 영속적 변조를 검출한다.
+  \item \textbf{M2} (시드 정상성): 시드 버퍼가 0 또는 동일 패턴인지 검사하여 SEED를 차단한다.
+  \item \textbf{M3} (부호$\cdot$난수 재유도): 채택된 시도의 $(\yvec,b)$를 재샘플링하여 대조함으로써
+        SIGNBIT를 차단한다.
+  \item \textbf{M4} (응답 재계산): $\zvec=\yvec+(-1)^b c\svec_1$을 재계산해 방출값과 대조하여(XOR 누적)
+        T1과 T2를 \emph{비교 분기 없이} 차단한다.
+  \item \textbf{M5} (서명경계 노름 재검사): $\lVert\zvec\rVert$가 \textbf{서명 경계 $B_1$과 bimodal 경계
+        $B_0$}를 만족하는지 재검사하여 거부 우회(RB)를 차단한다.
+  \item \textbf{M6} (표준 검증): 방출 서명을 검증식으로 재구성하여, 자기 일관적이지만 무효한
+        서명(LSB, UNPACK)을 검출한다.
+\end{itemize}
+누적된 잔차 $\delta$는 마지막 \emph{감염 단계}에서 서명에 확산된다. $\delta\neq0$일 때만 전체 비트가 1이
+되는 마스크 $m$를 분기 없이 생성하여\footnote{$m=-\big((\delta\mathbin{|}(-\delta))\gg(w{-}1)\big)$: $\delta\neq0$이면 $\delta$ 또는 $-\delta$의 최상위(부호) 비트가 1이라 $(w{-}1)$만큼 시프트하면 $1$, 음수화하면 전 비트가 $1$; $\delta=0$이면 $0$이다. 즉 조건 분기 없이 ``$\delta$가 0인가''를 전-$0$/전-$1$ 마스크로 변환한다. PRF에 서명별 값(메시지 또는 nonce)을 결합하는 것은 마스크 신선도를 위한 것으로, 동일 $\delta$가 여러 서명에서 반복되어도 마스크가 재사용되지 않게 한다.}, 서명에 $\mathrm{PRF}(\text{비밀 시드}\Vert\delta\Vert\text{메시지})\wedge m$를 XOR한다. 여기서 $\mathrm{PRF}$는 의사난수함수(pseudo-random function)이다.
+
+\begin{algorithm}[H]
+\caption{IRV 무결성 보호 (응답 $\zvec$ 확정 직후, 폭 $w$비트 누산)}
+\label{alg:irv}
+\begin{algorithmic}[1]
+\State $\delta \gets 0$ \Comment{무부호 잔차 누산기}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M1}(\svec\ \text{체크섬})$ \Comment{비밀키 무결성}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M2}(\text{시드 정상성})$ \Comment{SEED}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M3}(\yvec,b\ \text{재유도})$ \Comment{SIGNBIT}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M4}\big(\zvec \overset{?}{=} \yvec+(-1)^b c\svec_1\big)$ \Comment{T1/T2}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M5}\big(\lVert\zvec\rVert \le B_1 \ \wedge\ \text{bimodal } B_0\big)$ \Comment{RB}
+\State $\delta \gets \delta \mathbin{|} \textsc{Chk}_{M6}(\text{표준 검증})$ \Comment{LSB/UNPACK}
+\State $m \gets -\big((\delta \mathbin{|} (-\delta)) \gg (w-1)\big)$ \Comment{$\delta\!=\!0\Rightarrow m\!=\!0$, else 전비트 1 (무분기)}
+\State $\sigma \gets \sigma \oplus \big(\mathrm{PRF}(\text{sk\_seed}\Vert\delta\Vert\text{msg}) \wedge m\big)$ \Comment{$\delta\!=\!0$이면 무변경}
+\State \Return $\sigma$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{건전성과 잔존 위협.} (i)~\emph{오탐 없음}: 무결함 시 모든 검사 잔차가 0이라 $\delta=0$,
+$m=0$이 되어 서명이 보존된다(\ref{subsec:coverage}절의 동일 다이제스트로 확인). (ii)~\emph{마스크
+신선도}: 감염 마스크를 $\mathrm{PRF}(\text{비밀 시드}\Vert\delta\Vert\text{메시지})$로 유도하므로,
+결정론 설정에서 동일 오류를 반복해도 메시지 결합으로 마스크가 신선하여 두 감염 출력의 XOR로 마스크가
+상쇄되지 않는다. (iii)~\emph{우연 상쇄}: 서로 다른 오류가 동일 $\delta$를 유발할 확률은 누산 폭 $w$에
+대해 $\approx 2^{-w}$로 무시할 수 있다. (iv)~\emph{잔존 2차 위협}: 본 기법은 \emph{탐지 분기} 스킵을
+제거하나, 감염 적용(9행)이나 $\delta$ 누적(2--7행) 자체를 표적으로 하는 2차 오류는 여전히 단일 지점이며,
+이에 대한 범위와 한계는 \ref{sec:disc}절에서 논한다.
+
+\subsection{단순 서명 후 검증의 한계}
+\label{subsec:b1b2}
+직관적인 대응은 서명 후 표준 검증을 한 번 수행하는 것이다. 그러나 \texttt{HAETAE}의 검증 경계
+$B_2$는 서명 경계 $B_1/B_0$보다 느슨하다($B_0,B_1<B_2$). 거부 판정 스킵으로 생성된 경계 초과
+응답은 $B_1/B_0$는 위반하지만 $B_2$는 만족할 수 있어, 표준 검증을 그대로 통과한다. 따라서 서명 후
+검증은 거부 우회(RB)를 검출하지 못한다. 반면 제안 기법의 M5는 검증 경계가 아니라 \emph{서명 경계}로
+재검사하므로 이 사각지대를 차단한다. 즉 올바른 대응은 검증 경계가 아니라 서명 경계를 기준으로
+재검사하여야 한다. 다만 서명 경로에는 $B_0$ bimodal 거부와 인코딩 상한(range coder)도 존재하여 경계
+초과 응답의 일부는 인코딩 단계에서 재거부될 수 있으므로, RB 누설은 T2와 같은 즉각적 복원이 아니라
+거부 샘플링 제거로 전사(transcript) 분포가 $\svec_1$에 의존하게 되는 \emph{통계적} 누설이다.

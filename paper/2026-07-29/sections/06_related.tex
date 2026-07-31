@@ -1,0 +1,49 @@
+\section{관련 연구}
+\label{sec:related}
+
+\textbf{격자 서명에 대한 오류주입공격.} Espitau 등~\cite{espitau2016}은 거부 샘플링 루프를 조기
+종료시키는 loop-abort 공격을 제안하였고, Groot Bruinderink와 Pessl~\cite{bruinderink2018}은 결정론
+격자 서명에 대한 클럭 글리치 차분 공격을 보고하였다. Ravi 등~\cite{ravi2022survey}은 Kyber와
+Dilithium에 대한 부채널 및 오류 공격을 종합하였으며, Dilithium에 대해서는 정정 오류와 명령어 스킵을
+이용한 공격이 실험적으로 입증되었으며~\cite{krahmer2024,elghamrawy2023}, 특히 Ravi
+등~\cite{ravi2019determinism}은 결정론 격자 서명에서 덧셈 스킵(skip-addition) 오류로 비밀키의
+일부를 복원하였다. 또한 NTT 트위들 상수에 대한 오류 분석~\cite{ravi2023ntt}과 hedged ML-DSA에 대한
+단일 서명 오류공격~\cite{jendral2024}이 보고되었다. 본 논문은 \texttt{HAETAE}에서 $+\yvec$
+스킵(T2)이 단일 서명만으로 비밀키 \emph{전체}를 직접 복원시킴을 새롭게 제시한다(표~\ref{tab:attack-compare}).
+기법의 핵심 착상($\yvec$ 제거 후 가역 챌린지로 나눔)은 loop-abort~\cite{espitau2016}·skip-addition
+~\cite{ravi2019determinism} 계열과 계보를 공유하나, 본 논문의 차별점은 $+\yvec$ 전체 스킵으로
+\emph{단일} 서명에서 $\svec_1$ \emph{전체}를 직접 복원한다는 점이다.
+
+\begin{table}[H]\centering
+\caption{격자 서명 오류주입공격 비교(오류 서명 수 = 키 복원에 필요한 결함 서명 개수).}
+\label{tab:attack-compare}
+\small
+\begin{tabular}{@{}lllc@{}}
+\toprule
+연구 & 대상 & 오류 효과 & 오류 서명 수 \\
+\midrule
+Espitau 등~\cite{espitau2016}             & BLISS/GLP          & 거부 루프 조기 종료          & 다중 \\
+Groot Bruinderink--Pessl~\cite{bruinderink2018} & 결정론 서명   & 클럭 글리치 차분             & 다중 \\
+Ravi 등~\cite{ravi2019determinism}        & \texttt{Dilithium} & 덧셈 스킵(\emph{부분} 키)    & 다중 \\
+Lee 등~\cite{lee2026haetae}               & \texttt{HAETAE}    & 부호 비트 등 4지점(차분)     & $\ge 2$ \\
+\textbf{본 논문 (T2)}                     & \texttt{HAETAE}    & $+\yvec$ 스킵 $\to \zvec{=}\pm c\svec_1$ & \textbf{단일} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{양자내성암호 대응 기법.} 대표적인 대응으로 이중 연산(높은 비용), 서명 후 검증(경량이나
+거부 우회를 놓침), 셔플링(비결정적)이 있다. 프로세서 수준 및 소프트웨어 수준의 오류 대응은 폭넓게
+연구되어 왔으나~\cite{boulifa2025,barenghi2010}, 대부분 비용과 안전성 사이의 절충에 직면한다.
+제안 기법은 서명 경계 재검사로 서명 후 검증의 사각지대를 메우고, 비교 연산 없는 감염형 처리로
+셔플링의 비결정성을 피하며, 이중 연산보다 낮은 비용으로 동작한다. 특히 셔플링은 Ulitzsch
+등~\cite{ulitzsch2023}이 정수 선형 계획법(ILP)으로 무력화함을 보인 바 있어, 오류에 대한 근본적
+대응으로는 한계가 있다.
+
+\textbf{선행 HAETAE 오류 연구.} Lee 등~\cite{lee2026haetae}은 \texttt{HAETAE}의 네 가지 공격
+지점(LSB, 공개 행렬 언패킹, 부호 비트, 샘플링 시드)과 네 가지 대응(서명 후 검증, 거부 루프 내
+이동, 부분 이중 연산, 정상성 검사)을 제시하였다. 본 논문은 이를 직접적인 비교 대상으로 삼되, 겹치는
+탐지 항목은 명시적으로 인용한다.
+
+\textbf{감염형 대응의 계보.} 본 논문은 Fermat 소정리에 기반하여 비교 연산 없이 RSA 오류를 검출한
+Seo 등~\cite{seo2013}의 대응 기법을 격자 Fiat--Shamir 서명으로 확장한 것이다. RSA 오류 대응의
+형식 검증~\cite{christofi2013}과 격자 서명의 오류 민감도 분석~\cite{bindel2016}도 본 연구와 관련된다.

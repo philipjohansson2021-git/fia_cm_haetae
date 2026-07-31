@@ -1,0 +1,457 @@
+% =====================================================================
+%  HAETAE-IRV 참고문헌 (영문). 핵심 항목은 IACR ePrint에서 웹 검증 완료.
+%  [VERIFIED] = ePrint/PDF 원문으로 확인. [UNVERIFIED] = 이번 세션 검증 불가 → 확인 필요.
+% =====================================================================
+
+% ---------- [VERIFIED] HAETAE 명세 (ePrint 2023/624, CHES 2024) ----------
+@misc{haetae,
+  author       = {Jung Hee Cheon and Hyeongmin Choe and Julien Devevey and
+                  Tim G\"uneysu and Dongyeon Hong and Markus Krausz and
+                  Georg Land and Marc M\"oller and Damien Stehl\'e and MinJune Yi},
+  title        = {{HAETAE}: Shorter Lattice-Based {Fiat-Shamir} Signatures},
+  howpublished = {Cryptology ePrint Archive, Paper 2023/624},
+  year         = {2023},
+  note         = {Published at IACR CHES 2024},
+  url          = {https://eprint.iacr.org/2023/624}
+}
+
+% ---------- [VERIFIED] Espitau et al., Loop-Abort (ePrint 2016/449, SAC 2016) ----------
+@misc{espitau2016,
+  author       = {Thomas Espitau and Pierre-Alain Fouque and
+                  Beno\^{i}t G\'erard and Mehdi Tibouchi},
+  title        = {Loop-Abort Faults on Lattice-Based {Fiat--Shamir} and
+                  Hash-and-Sign Signatures},
+  howpublished = {Cryptology ePrint Archive, Paper 2016/449},
+  year         = {2016},
+  note         = {Published at SAC 2016},
+  url          = {https://eprint.iacr.org/2016/449}
+}
+
+% ---------- [VERIFIED] Groot Bruinderink & Pessl (ePrint 2018/355, TCHES 2018) ----------
+@misc{bruinderink2018,
+  author       = {Leon Groot Bruinderink and Peter Pessl},
+  title        = {Differential Fault Attacks on Deterministic Lattice Signatures},
+  howpublished = {Cryptology ePrint Archive, Paper 2018/355},
+  year         = {2018},
+  note         = {IACR TCHES 2018(3); clock glitching on ARM Cortex-M4},
+  url          = {https://eprint.iacr.org/2018/355}
+}
+
+% ---------- [VERIFIED] Ravi et al., SCA/FIA survey (ePrint 2022/737) ----------
+@misc{ravi2022survey,
+  author       = {Prasanna Ravi and Anupam Chattopadhyay and
+                  Jan Pieter D'Anvers and Anubhab Baksi},
+  title        = {Side-channel and Fault-injection Attacks over Lattice-based
+                  Post-quantum Schemes ({Kyber}, {Dilithium}): Survey and New Results},
+  howpublished = {Cryptology ePrint Archive, Paper 2022/737},
+  year         = {2022},
+  url          = {https://eprint.iacr.org/2022/737}
+}
+
+% ---------- [VERIFIED] 저자 선행연구 (RSA-Fermat infective, JKIISC 2013; PDF 원문 확인) ----------
+@article{seo2013,
+  author  = {GaeWon Seo and YooJin Baek and SungKyoung Kim and
+             TaeWon Kim and Seokhie Hong},
+  title   = {Secure Classical {RSA} Cryptosystem against Fault Injection
+             Attack based on {Fermat's} Theorem},
+  journal = {Journal of the Korea Institute of Information Security and
+             Cryptology (JKIISC)},
+  volume  = {23},
+  number  = {5},
+  pages   = {859--865},
+  year    = {2013},
+  doi     = {10.13089/JKIISC.2013.23.5.859}
+}
+% 주: pages 859--865 중 끝 페이지는 원문 확인 권장(시작면 859 확인됨).
+
+% ---------- [VERIFIED-standard] Lyubashevsky, Fiat-Shamir with Aborts (Asiacrypt 2009) ----------
+@inproceedings{lyubashevsky2009,
+  author    = {Vadim Lyubashevsky},
+  title     = {Fiat-Shamir with Aborts: Applications to Lattice and
+               Factoring-Based Signatures},
+  booktitle = {Advances in Cryptology -- ASIACRYPT 2009},
+  series    = {LNCS},
+  volume    = {5912},
+  pages     = {598--616},
+  year      = {2009},
+  publisher = {Springer}
+}
+% 주: 표준 문헌. (이전 bib의 year=2012 는 오류, 정정함.)
+
+% ---------- [VERIFIED-standard] Shor 1994 ----------
+@inproceedings{shor1994,
+  author    = {Peter W. Shor},
+  title     = {Algorithms for Quantum Computation: Discrete Logarithms and Factoring},
+  booktitle = {35th Annual Symposium on Foundations of Computer Science (FOCS)},
+  pages     = {124--134},
+  year      = {1994},
+  publisher = {IEEE}
+}
+
+% ---------- [VERIFIED-standard] Peikert, A Decade of Lattice Cryptography ----------
+@article{peikert2016,
+  author  = {Chris Peikert},
+  title   = {A Decade of Lattice Cryptography},
+  journal = {Foundations and Trends in Theoretical Computer Science},
+  volume  = {10},
+  number  = {4},
+  pages   = {283--424},
+  year    = {2016}
+}
+
+% ---------- [VERIFIED] CRYSTALS-Dilithium (ePrint 2017/633, TCHES 2018) ----------
+@misc{dilithium,
+  author       = {L\'eo Ducas and Tancr\`ede Lepoint and Vadim Lyubashevsky and
+                  Peter Schwabe and Gregor Seiler and Damien Stehl\'e},
+  title        = {{CRYSTALS}--{Dilithium}: Digital Signatures from Module Lattices},
+  howpublished = {Cryptology ePrint Archive, Paper 2017/633},
+  year         = {2017},
+  note         = {IACR TCHES 2018},
+  url          = {https://eprint.iacr.org/2017/633}
+}
+
+% ---------- [VERIFIED] BLISS / bimodal Gaussians (ePrint 2013/383, CRYPTO 2013) ----------
+@misc{bliss2013,
+  author       = {L\'eo Ducas and Alain Durmus and Tancr\`ede Lepoint and Vadim Lyubashevsky},
+  title        = {Lattice Signatures and Bimodal Gaussians},
+  howpublished = {Cryptology ePrint Archive, Paper 2013/383},
+  year         = {2013},
+  note         = {CRYPTO 2013},
+  url          = {https://eprint.iacr.org/2013/383}
+}
+
+% ---------- [VERIFIED] Lyubashevsky, Lattice Signatures Without Trapdoors (ePrint 2011/537, Eurocrypt 2012) ----------
+@misc{lyubashevsky2012,
+  author       = {Vadim Lyubashevsky},
+  title        = {Lattice Signatures Without Trapdoors},
+  howpublished = {Cryptology ePrint Archive, Paper 2011/537},
+  year         = {2011},
+  note         = {Eurocrypt 2012},
+  url          = {https://eprint.iacr.org/2011/537}
+}
+
+% ---------- NIST PQC (웹 출처) ----------
+@misc{nist_pqc,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {Post-Quantum Cryptography Standardization},
+  howpublished = {\url{https://csrc.nist.gov/projects/post-quantum-cryptography}},
+  year         = {2024},
+  note         = {FIPS 203/204/205 finalized Aug. 2024}
+}
+
+% =====================================================================
+%  [VERIFIED-this-session] 추가 결함공격/대응기법 문헌 (ePrint 원문 또는 표준문헌 확인)
+% =====================================================================
+
+% [VERIFIED ePrint 2024/138] Krahmer et al., 랜덤화 Dilithium 정정 결함공격 + 대응기법 우회
+@misc{krahmer2024,
+  author       = {Elisabeth Krahmer and Peter Pessl and Georg Land and Tim G\"uneysu},
+  title        = {Correction Fault Attacks on Randomized {CRYSTALS}-{Dilithium}},
+  howpublished = {Cryptology ePrint Archive, Paper 2024/138},
+  year         = {2024},
+  note         = {IACR TCHES 2024; clock glitch on ARM MCU},
+  url          = {https://eprint.iacr.org/2024/138}
+}
+
+% [VERIFIED ePrint 2023/1074] ElGhamrawy et al., 명령어 스킵 차분 결함공격(MLWE->RLWE)
+@misc{elghamrawy2023,
+  author       = {Mohamed ElGhamrawy and Melissa Azouaoui and Olivier Bronchain and
+                  Joost Renes and Tobias Schneider and Markus Sch\"onauer and
+                  Okan Seker and Christine van Vredendaal},
+  title        = {From {MLWE} to {RLWE}: A Differential Fault Attack on Randomized
+                  \& Deterministic {Dilithium}},
+  howpublished = {Cryptology ePrint Archive, Paper 2023/1074},
+  year         = {2023},
+  note         = {IACR TCHES 2023},
+  url          = {https://eprint.iacr.org/2023/1074}
+}
+
+% [VERIFIED-standard] Bindel, Buchmann, Kramer — 격자 서명의 결함 민감도 (FDTC 2016)
+@inproceedings{bindel2016,
+  author    = {Nina Bindel and Johannes Buchmann and Juliane Kr\"amer},
+  title     = {Lattice-Based Signature Schemes and Their Sensitivity to Fault Attacks},
+  booktitle = {2016 Workshop on Fault Diagnosis and Tolerance in Cryptography (FDTC)},
+  pages     = {63--77},
+  year      = {2016},
+  publisher = {IEEE},
+  doi       = {10.1109/FDTC.2016.11}
+}
+
+% [VERIFIED-standard] Christofi et al. — CRT-RSA 결함 대응기법 형식검증 (JCEN 2013)
+@article{christofi2013,
+  author  = {Maria Christofi and Boutheina Chetali and Louis Goubin and David Vigilant},
+  title   = {Formal Verification of a {CRT-RSA} Implementation against Fault Attacks},
+  journal = {Journal of Cryptographic Engineering},
+  volume  = {3},
+  number  = {3},
+  year    = {2013},
+  doi     = {10.1007/s13389-013-0049-3}
+}
+
+% [VERIFIED — PDF 원문 확인] Lee, Kim, Ha — HAETAE 결함공격·대응 (JKIISC 2026.4)
+%   ★직접 선행/경쟁 연구★ 반드시 인용·차별화. (호서대 하재철 그룹)
+@article{lee2026haetae,
+  author  = {Sangwon Lee and Yunsung Kim and Jaecheol Ha},
+  title   = {Fault Injection Attacks on Post-Quantum Cryptography Algorithm
+             {HAETAE} and Their Countermeasures},
+  journal = {Journal of the Korea Institute of Information Security and
+             Cryptology (JKIISC)},
+  volume  = {36},
+  number  = {2},
+  pages   = {429--442},
+  year    = {2026},
+  doi     = {10.13089/JKIISC.2026.36.2.429}
+}
+
+% =====================================================================
+%  [VERIFIED-this-session 2nd batch] 추가 문헌 (웹 검증 완료)
+% =====================================================================
+
+% [VERIFIED] 결함주입공격의 효시 (EUROCRYPT '97, LNCS 1233)
+@inproceedings{boneh1997,
+  author    = {Dan Boneh and Richard A. DeMillo and Richard J. Lipton},
+  title     = {On the Importance of Checking Cryptographic Protocols for Faults},
+  booktitle = {Advances in Cryptology -- EUROCRYPT '97},
+  series    = {LNCS},
+  volume    = {1233},
+  pages     = {37--51},
+  year      = {1997},
+  publisher = {Springer}
+}
+
+% [VERIFIED] "검증 후 출력도 충분치 않다" → 감염형/무분기 대응의 동기 (IEEE TC 2000)
+@article{yen2000,
+  author  = {Sung-Ming Yen and Marc Joye},
+  title   = {Checking Before Output May Not Be Enough Against Fault-Based Cryptanalysis},
+  journal = {IEEE Transactions on Computers},
+  volume  = {49},
+  number  = {9},
+  pages   = {967--970},
+  year    = {2000},
+  doi     = {10.1109/12.869328}
+}
+
+% [VERIFIED] 결함공격·대응 종합 서베이 (Proceedings of the IEEE 2006)
+@article{barel2006,
+  author  = {Hagai Bar-El and Hamid Choukri and David Naccache and
+             Michael Tunstall and Claire Whelan},
+  title   = {The Sorcerer's Apprentice Guide to Fault Attacks},
+  journal = {Proceedings of the IEEE},
+  volume  = {94},
+  number  = {2},
+  pages   = {370--382},
+  year    = {2006},
+  doi     = {10.1109/JPROC.2005.862424}
+}
+
+% [VERIFIED] 명령어 스킵 결함 모델의 물리적 실증 (FDTC 2013) — instruction-skip 모델 근거
+@inproceedings{moro2013,
+  author    = {Nicolas Moro and Amine Dehbaoui and Karine Heydemann and
+               Bruno Robisson and Emmanuelle Encrenaz},
+  title     = {Electromagnetic Fault Injection: Towards a Fault Model on a
+               32-bit Microcontroller},
+  booktitle = {2013 Workshop on Fault Diagnosis and Tolerance in Cryptography (FDTC)},
+  pages     = {77--88},
+  year      = {2013},
+  publisher = {IEEE},
+  doi       = {10.1109/FDTC.2013.9}
+}
+
+% [VERIFIED] 실험 플랫폼 ChipWhisperer (COSADE 2014; ePrint 2014/204)
+@inproceedings{oflynn2014,
+  author    = {Colin O'Flynn and Zhizhang Chen},
+  title     = {{ChipWhisperer}: An Open-Source Platform for Hardware
+               Embedded Security Research},
+  booktitle = {Constructive Side-Channel Analysis and Secure Design (COSADE 2014)},
+  series    = {LNCS},
+  volume    = {8622},
+  pages     = {243--260},
+  year      = {2014},
+  publisher = {Springer},
+  note      = {Cryptology ePrint Archive, Paper 2014/204},
+  url       = {https://eprint.iacr.org/2014/204}
+}
+
+% [VERIFIED] 결정론 격자서명에 대한 skip-addition 결함공격 (AsiaCCS 2019; ePrint 2019/769)
+%   ★T1/T2(덧셈/곱셈 스킵)의 직접 선례 — §3·§8 인용★
+@inproceedings{ravi2019determinism,
+  author    = {Prasanna Ravi and Mahabir Prasad Jhanwar and James Howe and
+               Anupam Chattopadhyay and Shivam Bhasin},
+  title     = {Exploiting Determinism in Lattice-based Signatures: Practical
+               Fault Attacks on pqm4 Implementations of {NIST} Candidates},
+  booktitle = {ACM Asia Conference on Computer and Communications Security (AsiaCCS)},
+  pages     = {427--440},
+  year      = {2019},
+  publisher = {ACM},
+  note      = {Cryptology ePrint Archive, Paper 2019/769},
+  url       = {https://eprint.iacr.org/2019/769}
+}
+
+% [VERIFIED] 셔플링 대응을 ILP로 무력화 (IACR TCHES 2023(4)) — 셔플링의 한계 근거
+@article{ulitzsch2023,
+  author  = {Vincent Quentin Ulitzsch and Soundes Marzougui and Alexis Bagia and
+             Mehdi Tibouchi and Jean-Pierre Seifert},
+  title   = {Loop Aborts Strike Back: Defeating Fault Countermeasures in
+             Lattice Signatures with {ILP}},
+  journal = {IACR Transactions on Cryptographic Hardware and Embedded Systems},
+  volume  = {2023},
+  number  = {4},
+  pages   = {367--392},
+  year    = {2023},
+  doi     = {10.46586/tches.v2023.i4.367-392}
+}
+
+% =====================================================================
+%  [Lee 등 (2026) 참고문헌에서 전사] 비교 대상 논문이 인용한 문헌.
+%  서지 정보는 Lee 등~\cite{lee2026haetae}의 References [1]-[24]를 따른다.
+% =====================================================================
+
+% [Lee-ref 1] NIST 서명 표준 FIPS 204 (ML-DSA)
+@misc{fips204,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {{FIPS 204}: Module-Lattice-Based Digital Signature Standard},
+  howpublished = {NIST FIPS 204},
+  year         = {2024}
+}
+
+% [Lee-ref 3] 클럭 결함주입 (ICCCNS 2020)
+@inproceedings{yang2020,
+  author    = {Pei Yang and Fang Luo and Qingyi Ou and Daming Zhou},
+  title      = {Design and Analysis of Clock Fault Injection for {AES}},
+  booktitle = {Int. Conf. on Computer Communications and Networks Security},
+  pages     = {87--91},
+  year      = {2020}
+}
+
+% [Lee-ref 4] crowbar 기반 결함주입 (ePrint 2016/810)
+@misc{oflynn2016,
+  author       = {Colin O'Flynn},
+  title        = {Fault Injection using Crowbars on Embedded Systems},
+  howpublished = {Cryptology ePrint Archive, Paper 2016/810},
+  year         = {2016},
+  url          = {https://eprint.iacr.org/2016/810}
+}
+
+% [Lee-ref 5] 광학(레이저) 결함주입 (CHES 2002)
+@inproceedings{skorobogatov2002,
+  author    = {Sergei P. Skorobogatov and Ross J. Anderson},
+  title     = {Optical Fault Induction Attacks},
+  booktitle = {Cryptographic Hardware and Embedded Systems (CHES)},
+  series    = {LNCS},
+  volume    = {2523},
+  pages     = {2--12},
+  year      = {2002},
+  publisher = {Springer}
+}
+
+% [Lee-ref 6] 전자기 결함주입 메커니즘 (FDTC 2019)
+@inproceedings{dumont2019,
+  author    = {Mathieu Dumont and Mathieu Lisart and Philippe Maurine},
+  title     = {Electromagnetic Fault Injection: How Faults Occur},
+  booktitle = {Workshop on Fault Diagnosis and Tolerance in Cryptography (FDTC)},
+  pages     = {9--16},
+  year      = {2019}
+}
+
+% [Lee-ref 8] 결함 공격자 모델 SoK (CT-RSA 2024)
+@inproceedings{toprakhisar2024,
+  author    = {Dilara Toprakhisar and Svetla Nikova and Ventzislav Nikov},
+  title     = {{SoK}: Parameterization of Fault Adversary Models -- Connecting
+               Theory and Practice},
+  booktitle = {Topics in Cryptology -- CT-RSA 2024},
+  series    = {LNCS},
+  volume    = {14643},
+  pages     = {433--459},
+  year      = {2024},
+  publisher = {Springer}
+}
+
+% [Lee-ref 11] NTT 트위들 상수 결함 분석 (TCHES 2023)
+@article{ravi2023ntt,
+  author  = {Prasanna Ravi and Bolin Yang and Shivam Bhasin and Fan Zhang},
+  title   = {Fiddling the Twiddle Constants -- Fault Injection Analysis of the
+             Number Theoretic Transform},
+  journal = {IACR Transactions on Cryptographic Hardware and Embedded Systems},
+  volume  = {2023},
+  number  = {2},
+  year    = {2023}
+}
+
+% [Lee-ref 12] hedged ML-DSA 단일 트레이스 결함 (FDTC 2024)
+@inproceedings{jendral2024,
+  author    = {S\"onke Jendral and John Pre\"u{\ss} Mattsson and Elena Dubrova},
+  title     = {A Single-Trace Fault Injection Attack on Hedged Module Lattice
+               Digital Signature Algorithm ({ML-DSA})},
+  booktitle = {Workshop on Fault Detection and Tolerance in Cryptography (FDTC)},
+  pages     = {34--43},
+  year      = {2024}
+}
+
+% [Lee-ref 16] RSA 서명 결함 메모 (Lenstra, 1996)
+@techreport{lenstra1996,
+  author      = {Arjen K. Lenstra},
+  title       = {Memo on {RSA} Signature Generation in the Presence of Faults},
+  institution = {Technical Report},
+  year        = {1996}
+}
+
+% [Lee-ref 17] 타원곡선 암호 차분 결함공격 (CRYPTO 2000)
+@inproceedings{biehl2000,
+  author    = {Ingrid Biehl and Bernd Meyer and Volker M\"uller},
+  title     = {Differential Fault Attacks on Elliptic Curve Cryptosystems},
+  booktitle = {Advances in Cryptology -- CRYPTO 2000},
+  series    = {LNCS},
+  volume    = {1880},
+  pages     = {131--146},
+  year      = {2000},
+  publisher = {Springer}
+}
+
+% [Lee-ref 18] ECC 영구/일시 결함 (DCC 2005)
+@article{ciet2005,
+  author  = {Mathieu Ciet and Marc Joye},
+  title   = {Elliptic Curve Cryptosystems in the Presence of Permanent and
+             Transient Faults},
+  journal = {Designs, Codes and Cryptography},
+  volume  = {36},
+  number  = {1},
+  pages   = {33--43},
+  year    = {2005}
+}
+
+% [Lee-ref 22] 결함을 오실로스코프로 활용 (TCHES 2021)
+@article{spruyt2021,
+  author  = {Albert Spruyt and Alyssa Milburn and {\L}ukasz Chmielewski},
+  title   = {Fault Injection as an Oscilloscope: Fault Correlation Analysis},
+  journal = {IACR Transactions on Cryptographic Hardware and Embedded Systems},
+  pages   = {192--216},
+  year    = {2021}
+}
+
+% [Lee-ref 23] 프로세서 결함 대응 리뷰 (Information 2025)
+@article{boulifa2025,
+  author  = {Radhia Boulifa and Giorgio Di Natale and Paolo Maistri},
+  title   = {Countermeasures against Fault Injection Attacks in Processors: A Review},
+  journal = {Information},
+  volume  = {16},
+  number  = {4},
+  year    = {2025}
+}
+
+% [Lee-ref 24] 저비용 SW 결함 대응 (WESS 2010)
+@inproceedings{barenghi2010,
+  author    = {Alessandro Barenghi and Luca Breveglieri and Israel Koren and
+               Gerardo Pelosi and Francesco Regazzoni},
+  title     = {Low Cost Software Countermeasures against Fault Attacks:
+               Implementation and Performances Trade-offs},
+  booktitle = {5th Workshop on Embedded Systems Security (WESS)},
+  year      = {2010}
+}
+
+% =====================================================================
+%  [확인 필요 — 본문 인용 보류] 아래는 이번 세션에서 검증하지 못했습니다.
+% =====================================================================
+% - "Loop Aborts Strike Back": 해결됨 -> 위 ulitzsch2023 (TCHES 2023, issue 4, 367-392).
+% - 국내 JKIISC/CISC 논문(A01~A05): koreascience/thinkonweb 접근 불가로 미검증.
+%   특히 HAETAE 결함공격·대응(A02, A05)은 직접 선행연구일 수 있어 반드시 확인할 것.
+% - A07 (Jendral, Mattsson, Dubrova, FDTC 2024): 미검증.
